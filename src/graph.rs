@@ -6,6 +6,11 @@ pub mod graph {
         fn vertex_count() -> usize;
         fn edges_count();
         fn get_vertexes() -> Vec<Rc<dyn DefaultVertex<T>>>;
+        fn add_edge(start: Rc<dyn DefaultVertex<T>>, end: Rc<dyn DefaultVertex<T>>);
+
+    }
+
+    pub trait OrientedDefault<T>: DefaultGraph<T> {
     }
 
 
@@ -24,6 +29,10 @@ pub mod graph {
 
         fn get_vertexes() -> Vec<Rc<dyn DefaultVertex<T>>> {
             Self.vertexes
+        }
+
+        fn add_edge(start: Rc<dyn DefaultVertex<T>>, end: Rc<dyn DefaultVertex<T>>) {
+            todo!()
         }
     }
 }
