@@ -1,8 +1,8 @@
 pub mod edge {
     use std::rc::Rc;
-    use crate::vertex::vertex::Vertex;
+    use crate::vertex::vertex::DefaultVertex;
 
-    pub trait Edge {
-        fn end<T>() -> Rc<&dyn Vertex<T>>;
+    pub trait DefaultEdge {
+        fn end<T>() -> Rc<&dyn DefaultVertex<T>>;
     }
 }

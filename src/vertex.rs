@@ -1,22 +1,40 @@
 pub mod vertex {
     use std::ops::Add;
-    use crate::edge::edge::Edge;
+    use std::rc::Rc;
+    use crate::edge::edge::DefaultEdge;
 
-    pub trait Vertex<T> {
-        fn get_edges() -> &dyn Edge;
-        fn add_neighbor();
+    pub trait DefaultVertex<T> {
+        fn get_edges() -> Vec<Rc<dyn DefaultEdge>>;
+        fn add_neighbor(new_neighbor: Rc<dyn DefaultEdge>);
 
-        fn remove_neighbor() -> &dyn Vertex<T>;
+        fn remove_neighbor(vertex: Rc<dyn DefaultVertex<T>>) -> Result<Ok, Err>;
 
         fn get_id() -> i32;
-        fn swap();
     }
 
-    impl<T> Add<&dyn Vertex<T>> for &dyn Vertex<T> {
-        type Output = ();
+    #[derive(PartialOrd, PartialEq)]
+    pub struct Vertex<T> {
+        id: i32,
+        value: T,
+        edges: Vec<Rc<dyn DefaultEdge>>,
 
-        fn add(self, rhs: &dyn Vertex<T>) -> Self::Output {
+    }
+
+    impl <T> DefaultVertex<T> for Vertex<T> {
+        fn get_edges() -> Vec<Rc<dyn DefaultEdge>> {
+            Self.edges
+        }
+
+        fn add_neighbor(new_neighbor: Rc<dyn DefaultEdge>){
+            Self.edges.push(new_neighbor)
+        }
+
+        fn remove_neighbor(vertex: Rc<dyn DefaultVertex<T>>) -> Result<Ok, Err>{
             todo!()
+        }
+
+        fn get_id() -> i32 {
+            Self.id
         }
     }
 
