@@ -1,9 +1,9 @@
-workspace = { members = [ "graph-file","graph-lib"] }
-[package]
-name = "graph"
+[workspace.package]
 version = "0.1.0"
 edition = "2021"
 
+[workspace]
+members = [ "graph-file", "graph-lib"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dependencies]
+[workspace.dependencies]
