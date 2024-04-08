@@ -30,7 +30,7 @@ pub mod edge {
     }
 
     impl<T> OrientedEdge<T> {
-        fn new(start: Rc<Vertex<T, OrientedEdge<T>>>, end: Rc<Vertex<T, OrientedEdge<T>>>) -> Self {
+        pub(crate) fn new(start: Rc<Vertex<T, OrientedEdge<T>>>, end: Rc<Vertex<T, OrientedEdge<T>>>) -> Self {
             Self {
                 start: Rc::downgrade(&start),
                 end: Rc::downgrade(&end)

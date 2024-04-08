@@ -16,6 +16,8 @@ pub mod graph {
 
         fn add_edge(&mut self, edge: Self::EdgeType);
         fn add_edge_with_vertex_id(&mut self, start: usize, end: usize) -> Result<(), String>;
+        
+        fn add_vertex(&mut self, id: usize, value: T);
     }
 
     pub struct OrientedGraph<T> {
@@ -52,13 +54,17 @@ pub mod graph {
                 (self.get_vertex_by_id(start), self.get_vertex_by_id(end))
             {
                 let new_edge = Rc::new(OrientedEdge::<T>::new(start.clone(), end.clone()));
-                start.add_neighbor(new_edge.clone());
-                end.add_neighbor(new_edge.clone());
+                start.add_neighbor(Rc::clone(&new_edge));
+                end.add_neighbor(Rc::clone(&new_edge));
                 self.edges.push(new_edge);
                 Ok(())
             } else {
                 Err(String::from("Cannot find vertexes"))
             }
+        }
+
+        fn add_vertex(&mut self, id: usize, value: T) {
+            self.vertexes.push(Rc::new(Vertex::<T, OrientedEdge<T>>::new(id, value)))
         }
     }
 }
