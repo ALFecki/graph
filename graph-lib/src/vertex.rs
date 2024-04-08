@@ -4,7 +4,7 @@ pub mod vertex {
     use crate::edge::edge::DefaultEdge;
 
     pub trait DefaultVertex<T> {
-        fn get_edges() -> Vec<Rc<dyn DefaultEdge>>;
+        fn get_edges() -> Vec<dyn DefaultEdge>;
         fn add_neighbor(new_neighbor: Rc<dyn DefaultEdge>);
 
         fn remove_neighbor(vertex: Rc<dyn DefaultVertex<T>>) -> Result<Ok, Err>;
@@ -16,12 +16,11 @@ pub mod vertex {
     pub struct Vertex<T> {
         id: i32,
         value: T,
-        edges: Vec<Rc<dyn DefaultEdge>>,
-
+        edges: Vec<dyn DefaultEdge<T>>,
     }
 
     impl <T> DefaultVertex<T> for Vertex<T> {
-        fn get_edges() -> Vec<Rc<dyn DefaultEdge>> {
+        fn get_edges() -> Vec<dyn DefaultEdge> {
             Self.edges
         }
 
