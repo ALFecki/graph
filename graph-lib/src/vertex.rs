@@ -5,13 +5,14 @@ pub mod vertex {
 
     
     pub trait DefaultVertex<T> {
+        type EdgeType: DefaultEdge<T>;
 
-        fn get_edges() -> Vec<impl DefaultEdge<T>>;
-        fn add_neighbor(new_neighbor: impl DefaultEdge<T>);
+        // fn get_edges(&self) -> Vec<Self::EdgeType>;
+        fn add_neighbor(&mut self, new_neighbor: Self::EdgeType);
 
-        fn remove_neighbor(vertex: impl DefaultVertex<T>) -> Result<(), ()>;
+        fn remove_neighbor(&self, vertex: impl DefaultVertex<T>) -> Result<(), ()>;
 
-        fn get_id() -> i32;
+        fn get_id(&self) -> i32;
     }
 
     #[derive(PartialOrd, PartialEq)]
@@ -22,20 +23,22 @@ pub mod vertex {
     }
 
     impl <T, E: DefaultEdge<T>> DefaultVertex<T> for Vertex<T, E> {
-        fn get_edges() -> Vec<E> {
-            Self.edges
+        type EdgeType = E;
+
+        // fn get_edges(&self) -> Vec<Self::EdgeType> {
+        //     self.edges
+        // }
+
+        fn add_neighbor(&mut self, new_neighbor: Self::EdgeType) {
+            self.edges.push(new_neighbor)
         }
 
-        fn add_neighbor(new_neighbor: impl DefaultEdge<T>) {
-            Self.edges.push(new_neighbor)
-        }
- 
-        fn remove_neighbor(vertex: impl DefaultVertex<T>) -> Result<(), ()>{
+        fn remove_neighbor(&self, vertex: impl DefaultVertex<T>) -> Result<(), ()> {
             todo!()
         }
 
-        fn get_id() -> i32 {
-            Self.id
+        fn get_id(&self) -> i32 {
+            todo!()
         }
     }
 

@@ -5,41 +5,45 @@ pub mod graph {
     use crate::vertex::vertex::{DefaultVertex, Vertex};
 
     pub trait DefaultGraph<T> {
-        fn vertex_count() -> usize;
-        fn edges_count() -> usize;
-        fn get_vertexes() -> Vec<Rc<impl DefaultVertex<T>>>;
+        fn vertex_count(&self) -> usize;
+        fn edges_count(&self) -> usize;
+        fn get_vertexes(&self) -> Vec<impl DefaultVertex<T>>;
 
-        fn get_vertex_by_id(id: usize) -> impl DefaultVertex<T>;
+        fn get_vertex_by_id(&self, id: usize) -> impl DefaultVertex<T>;
 
-        fn add_edge(edge: Rc<impl DefaultEdge<T>>);
-        fn add_edge_with_vertexes(start: Rc<impl DefaultVertex<T>>, end: Rc<impl DefaultVertex<T>>);
+        fn add_edge(&mut self, edge: impl DefaultEdge<T>);
+        fn add_edge_with_vertexes(&mut self, start: impl DefaultVertex<T>, end: impl DefaultVertex<T>);
 
     }
 
     pub struct OrientedGraph<T> {
-        vertexes: Vec<dyn DefaultVertex<T>>,
-        edges: Vec<OrientedEdge<T>>
+        vertexes: Vec<Vertex<T, OrientedEdge<T, V>>>,
+        // edges: Vec<OrientedEdge<T>>>>
     }
 
     impl<T> DefaultGraph<T> for OrientedGraph<T> {
-        fn vertex_count() -> usize {
+        fn vertex_count(&self) -> usize {
             Self.vertexes.len()
         }
 
-        fn edges_count() -> usize {
-            Self.edges.len()
+        fn edges_count(&self) -> usize {
+            self.edges.len()
         }
 
-        fn get_vertexes() -> Vec<Rc<dyn DefaultVertex<T>>> {
+        fn get_vertexes(&self) -> Vec<Vertex<T, OrientedEdge<T>>> {
             todo!()
         }
 
-        fn add_edge(edge: Rc<dyn DefaultEdge<T>>) {
-            Self.edges.push(edge)
+        fn get_vertex_by_id(&self, id: usize) -> Vertex<T, OrientedEdge<T>> {
+            todo!()
         }
 
-        fn add_edge_with_vertexes(start: Rc<dyn DefaultVertex<T>>, end: Rc<dyn DefaultVertex<T>>) {
-            Self.edges.push(
+        fn add_edge(&mut self, edge: impl DefaultEdge<T>) {
+            self.edges.push(edge)
+        }
+
+        fn add_edge_with_vertexes(&mut self, start: impl DefaultVertex<T>, end: impl DefaultVertex<T>) {
+            self.edges.push(
                 OrientedEdge::<T> {
                     start: Weak::new(start),
                     end: Weak::new(end)
