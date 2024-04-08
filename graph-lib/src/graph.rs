@@ -1,9 +1,10 @@
 pub mod graph {
     use crate::edge::edge::{DefaultEdge, Edge, OrientedEdge};
     use crate::vertex::vertex::{DefaultVertex, Vertex};
-    use std::collections::HashSet;
-    use std::fmt::Error;
+    
     use std::rc::{Rc, Weak};
+    use crate::error::GraphParseError;
+    use crate::serde::serde_graph::Deserialize;
 
     pub trait DefaultGraph<T> {
         type VertexType: DefaultVertex<T>;
@@ -65,6 +66,21 @@ pub mod graph {
 
         fn add_vertex(&mut self, id: usize, value: T) {
             self.vertexes.push(Rc::new(Vertex::<T, OrientedEdge<T>>::new(id, value)))
+        }
+    }
+    
+    impl<T> Deserialize<T> for OrientedGraph<T> {
+        fn deserialize(graph: &str) -> Result<OrientedGraph<T>, GraphParseError> {
+            todo!()
+        }
+
+        fn deserialize_vertex(vertex: &str) -> Result<Vertex<T, OrientedEdge<T>>, GraphParseError> {
+            let lines = vertex.split_whitespace();
+            let vertex_id = vertex.parse::<usize>().map_err(|_| GraphParseError::VertexParsingError);
+        }
+
+        fn deserialize_edge(edge: &str) -> Result<OrientedEdge<T>, GraphParseError> {
+            todo!()
         }
     }
 }
