@@ -4,11 +4,11 @@ pub mod edge {
     use crate::vertex::vertex::DefaultVertex;
 
     pub trait DefaultEdge<T> {
-        fn end() -> Weak<dyn DefaultVertex<T>>;
+        fn end() -> Weak<impl DefaultVertex<T>>;
     }
 
-    pub trait DefaultBidirectionalEdge<T>: DefaultEdge<T> {
-        fn start() ->  Weak<dyn DefaultVertex<T>>;
+    pub trait DefaultOrientedEdge<T>: DefaultEdge<T> {
+        fn start() ->  Weak<impl DefaultVertex<T>>;
     }
 
     pub struct Edge<T> {
@@ -21,18 +21,18 @@ pub mod edge {
         }
     }
 
-    pub struct BidirectionalEdge<T> {
+    pub struct OrientedEdge<T> {
         start: Weak<dyn DefaultVertex<T>>,
         end: Weak<dyn DefaultVertex<T>>
     }
 
 
-    impl<T> DefaultEdge<T> for BidirectionalEdge<T> {
+    impl<T> DefaultEdge<T> for OrientedEdge<T> {
         fn end() -> Weak<dyn DefaultVertex<T>> {
             Self.end
         }
     }
-    impl<T> DefaultBidirectionalEdge<T> for BidirectionalEdge<T> {
+    impl<T> DefaultOrientedEdge<T> for OrientedEdge<T> {
         fn start() ->  Weak<dyn DefaultVertex<T>> {
             Self.start
         }

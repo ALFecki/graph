@@ -3,32 +3,34 @@ pub mod vertex {
     use std::rc::Rc;
     use crate::edge::edge::DefaultEdge;
 
+    
     pub trait DefaultVertex<T> {
-        fn get_edges() -> Vec<dyn DefaultEdge>;
-        fn add_neighbor(new_neighbor: Rc<dyn DefaultEdge>);
 
-        fn remove_neighbor(vertex: Rc<dyn DefaultVertex<T>>) -> Result<Ok, Err>;
+        fn get_edges() -> Vec<impl DefaultEdge<T>>;
+        fn add_neighbor(new_neighbor: impl DefaultEdge<T>);
+
+        fn remove_neighbor(vertex: impl DefaultVertex<T>) -> Result<(), ()>;
 
         fn get_id() -> i32;
     }
 
     #[derive(PartialOrd, PartialEq)]
-    pub struct Vertex<T> {
+    pub struct Vertex<T, E: DefaultEdge<T>> {
         id: i32,
         value: T,
-        edges: Vec<dyn DefaultEdge<T>>,
+        edges: Vec<E>,
     }
 
-    impl <T> DefaultVertex<T> for Vertex<T> {
-        fn get_edges() -> Vec<dyn DefaultEdge> {
+    impl <T, E: DefaultEdge<T>> DefaultVertex<T> for Vertex<T, E> {
+        fn get_edges() -> Vec<E> {
             Self.edges
         }
 
-        fn add_neighbor(new_neighbor: Rc<dyn DefaultEdge>){
+        fn add_neighbor(new_neighbor: impl DefaultEdge<T>) {
             Self.edges.push(new_neighbor)
         }
-
-        fn remove_neighbor(vertex: Rc<dyn DefaultVertex<T>>) -> Result<Ok, Err>{
+ 
+        fn remove_neighbor(vertex: impl DefaultVertex<T>) -> Result<(), ()>{
             todo!()
         }
 
