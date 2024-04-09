@@ -7,13 +7,13 @@ pub mod edge {
 
     pub trait DefaultEdge<T> {
         type VertexType: DefaultVertex<T>;
-        fn end(&self) -> &Option<Rc<Self::VertexType>>;
-        fn end_mut(&mut self) -> &mut Option<Rc<Self::VertexType>>;
+        fn end(&self) -> Option<Rc<Self::VertexType>>;
+        fn set_end(&mut self, vertex: &Rc<Self::VertexType>);
     }
 
     pub trait DefaultOrientedEdge<T>: DefaultEdge<T> {
-        fn start(&self) -> &Option<Rc<Self::VertexType>>;
-        fn start_mut(&mut self) -> &mut Option<Rc<Self::VertexType>>;
+        fn start(&self) -> Option<Rc<Self::VertexType>>;
+        fn set_start(&mut self, vertex: Weak<Self::VertexType>);
     }
     #[derive(Debug)]
     pub struct OrientedEdge<T: Debug, V: Debug> {
@@ -45,22 +45,22 @@ pub mod edge {
     impl<T: Debug, V: Debug> DefaultEdge<T> for OrientedEdge<T, V> {
         type VertexType = Vertex<T, V>;
 
-        fn end(&self) -> &Option<Rc<Self::VertexType>> {
-            &self.end.upgrade()
+        fn end(&self) -> Option<Rc<Self::VertexType>> {
+            self.end.upgrade()
         }
 
-        fn end_mut(&mut self) -> &mut Option<Rc<Self::VertexType>> {
-            return &mut self.end.upgrade()
+        fn set_end(&mut self, vertex: &Rc<Self::VertexType>) {
+            self.end = Rc::downgrade(vertex)
         }
     }
 
     impl<T: Debug, V: Debug> DefaultOrientedEdge<T> for OrientedEdge<T, V> {
-        fn start(&self) -> &Option<Rc<Self::VertexType>> {
-            &self.start.upgrade()
+        fn start(&self) -> Option<Rc<Self::VertexType>> {
+            self.start.upgrade()
         }
 
-        fn start_mut(&mut self) -> &mut Option<Rc<Self::VertexType>> {
-            &mut self.start.upgrade()
+        fn set_start(&mut self, vertex: Weak<Self::VertexType>) {
+            self.start = Rc::downgrade(vertex);
         }
     }
 }

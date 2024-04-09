@@ -17,7 +17,7 @@ pub mod vertex {
         fn get_id(&self) -> usize;
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     pub struct Vertex<T: Debug, V: Debug> {
         id: usize,
         value: T,
