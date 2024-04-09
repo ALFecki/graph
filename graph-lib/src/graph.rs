@@ -3,7 +3,7 @@ pub mod graph {
     use std::str::FromStr;
 
     use crate::edge::edge::{DefaultEdge, OrientedEdge};
-    use crate::error::GraphParseError;
+    use crate::error::{EdgeParseError, GraphParseError, VertexParseError};
     use crate::serde::serde_graph::Deserialize;
     use crate::vertex::vertex::{DefaultVertex, Vertex};
 
@@ -55,7 +55,7 @@ pub mod graph {
             if let (Some(mut start), Some(mut end)) =
                 (self.get_vertex_by_id(start), self.get_vertex_by_id(end))
             {
-                let new_edge = Rc::new(OrientedEdge::<T, V>::new(start.clone(), end.clone(), value));
+                let new_edge = Rc::new(OrientedEdge::<T, V>::new(&start.clone(), &end.clone(), value));
                 start.add_neighbor(Rc::clone(&new_edge));
                 end.add_neighbor(Rc::clone(&new_edge));
                 self.edges.push(new_edge);
@@ -70,25 +70,39 @@ pub mod graph {
         }
     }
 
-    impl<T: FromStr, V> Deserialize<T, V> for OrientedGraph<T, V> {
-        fn deserialize(graph: &str) -> Result<OrientedGraph<T, V>, GraphParseError> {
-            todo!()
+    impl<T: FromStr, V: FromStr> Deserialize<T, V> for OrientedGraph<T, V> {
+        fn deserialize(graph: &str) -> Result<OrientedGraph<T, V>, VertexParseError> {
+            let lines = graph.lines();
+            
         }
 
-        fn deserialize_vertex(vertex: &str) -> Result<Vertex<T, V>, GraphParseError> {
+        fn deserialize_vertex(vertex: &str) -> Result<Vertex<T, V>, VertexParseError> {
             if let Some((index, value)) = vertex.split_once(char::is_whitespace) {
-                let vertex_id = index.parse::<usize>().map_err(|_| GraphParseError::VertexIndexParsingError);
-                let value = value.parse::<T>().map_err(|_| GraphParseError::VertexValueParsingError);
+                let vertex_id = index.parse::<usize>().map_err(|_| VertexParseError::VertexIndexParsingError);
+                let value = value.parse::<T>().map_err(|_| VertexParseError::VertexValueParsingError);
                 return Ok(Vertex::<T, V>::new(vertex_id?, value?));
             }
-            Err(GraphParseError::VertexParsingError)
+            Err(VertexParseError::VertexParsingError)
         }
 
-        fn deserialize_edge(edge: &str, vertexes: Vec<Rc<Vertex<T, OrientedEdge<T, V>>>>) -> Result<OrientedEdge<T, V>, GraphParseError> {
-            if let Some((end, start_with_value)) = edge.split_once(char::is_whitespace) {
-                // let end_vertex =
-            }
-            todo!()
+        fn deserialize_edge(edge: &str, vertexes: Vec<Rc<Vertex<T, V>>>) -> Result<OrientedEdge<T, V>, EdgeParseError> {
+            return if let Some((end, start_with_value)) = edge.split_once(char::is_whitespace) {
+                let end_vertex = end.parse::<usize>()
+                    .map_err(|_| EdgeParseError::EdgeEndParsingError)
+                    .and_then(|index| vertexes.iter().find(
+                        |&p| p.get_id() == index)
+                        .ok_or(EdgeParseError::VertexForEdgeIndexNotFound))?;
+                let (start, value) = start_with_value.split_once(char::is_whitespace).ok_or(EdgeParseError::EdgeParsingError)?;
+                let start_vertex = start.parse::<usize>()
+                    .map_err(|_| EdgeParseError::EdgeStartParsingError)
+                    .and_then(|index| vertexes.iter().find(
+                        |&p| p.get_id() == index)
+                        .ok_or(EdgeParseError::VertexForEdgeIndexNotFound))?;
+                let value = value.parse::<V>().map_err(|_| EdgeParseError::EdgeStartParsingError)?;
+                Ok(OrientedEdge::<T, V>::new(start_vertex, end_vertex, value))
+            } else {
+                Err(EdgeParseError::EdgeParsingError)
+            };
         }
     }
 }

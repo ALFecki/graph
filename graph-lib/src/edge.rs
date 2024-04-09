@@ -19,7 +19,7 @@ pub mod edge {
     }
 
     impl<T, V> OrientedEdge<T, V> {
-        pub(crate) fn new(start: Rc<Vertex<T, V>>, end: Rc<Vertex<T, V>>, value: V) -> Self {
+        pub(crate) fn new(start: &Rc<Vertex<T, V>>, end: &Rc<Vertex<T, V>>, value: V) -> Self {
             Self {
                 start: Rc::downgrade(&start),
                 end: Rc::downgrade(&end),
@@ -27,8 +27,7 @@ pub mod edge {
             }
         }
     }
-
-
+    
     impl<T, V> DefaultEdge<T> for OrientedEdge<T, V> {
         type VertexType = Vertex<T, V>;
 
