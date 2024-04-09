@@ -1,5 +1,5 @@
 use graph_lib::graph::graph::OrientedGraph;
-use graph_lib::serde::serde_graph::Deserialize;
+use graph_lib::serde::serde_graph::{DeserializeGraph, SerializeGraph};
 
 fn main() {
     let s = concat!(
@@ -9,6 +9,9 @@ fn main() {
         "1 2 Edge between the two\n"
     );
 
-    let graph = OrientedGraph::<String, String>::deserialize(s);
-    println!("{:?}", graph)
+    let graph = OrientedGraph::<String, String>::deserialize(s).unwrap();
+    println!("{:?}", graph);
+    
+    let ser_graph = graph.serialize().unwrap();
+    println!("{}", ser_graph)
 }
