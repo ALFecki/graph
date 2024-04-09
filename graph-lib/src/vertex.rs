@@ -8,7 +8,7 @@ pub mod vertex {
     pub trait DefaultVertex<T, V> {
         type EdgeType: DefaultEdge<T, V>;
 
-        // fn get_edges(&self) -> Vec<Self::EdgeType>;
+        fn get_edges(&self) -> Vec<Rc<RefCell<Self::EdgeType>>>;
         fn add_neighbor(&mut self, new_neighbor: Rc<RefCell<Self::EdgeType>>);
         fn find_neighbor(&self, vertex_id: usize);
 
@@ -38,9 +38,9 @@ pub mod vertex {
     impl<T: Debug, V: Debug> DefaultVertex<T, V> for Vertex<T, V> {
         type EdgeType = OrientedEdge<T, V>;
 
-        // fn get_edges(&self) -> Vec<Self::EdgeType> {
-        //     self.edges
-        // }
+        fn get_edges(&self) -> Vec<Rc<RefCell<Self::EdgeType>>> {
+            self.edges.clone()
+        }
 
         fn add_neighbor(&mut self, new_neighbor: Rc<RefCell<Self::EdgeType>>) {
             self.edges.push(new_neighbor)

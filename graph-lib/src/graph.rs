@@ -18,6 +18,8 @@ pub mod graph {
         fn vertex_count(&self) -> usize;
         fn edges_count(&self) -> usize;
         fn get_vertexes(&self) -> Vec<Rc<RefCell<Self::VertexType>>>;
+        
+        fn get_edges(&self) -> Vec<Rc<RefCell<Self::EdgeType>>>;
 
         fn get_vertex_by_id(&mut self, id: usize) -> Option<Rc<RefCell<Self::VertexType>>>;
 
@@ -32,6 +34,11 @@ pub mod graph {
         fn add_vertex(&mut self, vertex: Self::VertexType);
 
         fn add_raw_vertex(&mut self, id: usize, value: T);
+
+        fn remove_edge_by_vertex_id(&mut self, start: usize, end: usize);
+
+        fn remove_vertex(&mut self, vertex: Self::VertexType);
+        fn remove_vertex_by_id(&mut self, id: usize)  -> Result<(), GraphError>;
     }
 
     #[derive(Debug)]
@@ -63,6 +70,10 @@ pub mod graph {
 
         fn get_vertexes(&self) -> Vec<Rc<RefCell<Self::VertexType>>> {
             self.vertexes.clone()
+        }
+
+        fn get_edges(&self) -> Vec<Rc<RefCell<Self::EdgeType>>> {
+            self.edges.clone()
         }
 
         fn get_vertex_by_id(&mut self, id: usize) -> Option<Rc<RefCell<Self::VertexType>>> {
@@ -105,135 +116,21 @@ pub mod graph {
             self.vertexes
                 .push(Rc::new(RefCell::new(Vertex::<T, V>::new(id, value))))
         }
-    }
 
-    impl<T: FromStr + Debug, V: FromStr + Debug> DeserializeGraph<T, V> for OrientedGraph<T, V> {
-        type VertexType = Vertex<T, V>;
-        type EdgeType = OrientedEdge<T, V>;
-        type GraphType = OrientedGraph<T, V>;
-
-        fn deserialize(graph: &str) -> Result<Self::GraphType, GraphParseError> {
-            let mut graph_obj = Self::default();
-            let mut deser_edges = false;
-            for line in graph.lines() {
-                if line.starts_with("#") {
-                    deser_edges = true;
-                    continue;
-                }
-                if deser_edges {
-                    graph_obj.add_edge(
-                        Self::deserialize_edge(line, graph_obj.vertexes.clone())
-                            .map_err(|_| GraphParseError::EdgeParsingError)?,
-                    )
-                } else {
-                    graph_obj.add_vertex(
-                        Self::deserialize_vertex(line)
-                            .map_err(|_| GraphParseError::VertexParsingError)?,
-                    )
-                }
-            }
-            Ok(graph_obj)
+        fn remove_edge_by_vertex_id(&mut self, start: usize, end: usize) {
+            
+            // self.edges.iter().position(|&p|)
         }
 
-        fn deserialize_vertex(vertex: &str) -> Result<Self::VertexType, VertexParseError> {
-            if let Some((index, value)) = vertex.split_once(char::is_whitespace) {
-                let vertex_id = index
-                    .parse::<usize>()
-                    .map_err(|_| VertexParseError::VertexIndexParsingError);
-                let value = value
-                    .parse::<T>()
-                    .map_err(|_| VertexParseError::VertexValueParsingError);
-                return Ok(Vertex::<T, V>::new(vertex_id?, value?));
-            }
-            Err(VertexParseError::VertexParsingError)
+        fn remove_vertex(&mut self, vertex: Self::VertexType) {
+            todo!()
         }
 
-        fn deserialize_edge(
-            edge: &str,
-            vertexes: Vec<Rc<RefCell<Self::VertexType>>>,
-        ) -> Result<Self::EdgeType, EdgeParseError> {
-            return if let Some((start, end_with_value)) = edge.split_once(char::is_whitespace) {
-                let start_vertex = start
-                    .parse::<usize>()
-                    .map_err(|_| EdgeParseError::EdgeEndParsingError)
-                    .and_then(|index| {
-                        vertexes
-                            .iter()
-                            .find(|&p| p.borrow().id() == index)
-                            .ok_or(EdgeParseError::VertexForEdgeIndexNotFound)
-                    })?;
-
-                let (end, value) = end_with_value
-                    .split_once(char::is_whitespace)
-                    .ok_or(EdgeParseError::EdgeParsingError)?;
-
-                let end_vertex = end
-                    .parse::<usize>()
-                    .map_err(|_| EdgeParseError::EdgeStartParsingError)
-                    .and_then(|index| {
-                        vertexes
-                            .iter()
-                            .find(|&p| p.borrow().id() == index)
-                            .ok_or(EdgeParseError::VertexForEdgeIndexNotFound)
-                    })?;
-                let value = value
-                    .parse::<V>()
-                    .map_err(|_| EdgeParseError::EdgeStartParsingError)?;
-                Ok(OrientedEdge::<T, V>::new(start_vertex, end_vertex, value))
-            } else {
-                Err(EdgeParseError::EdgeParsingError)
-            };
-        }
-    }
-
-    impl<T: Debug + ToString, V: Debug + ToString> SerializeGraph<T, V> for OrientedGraph<T, V> {
-        type VertexType = Vertex<T, V>;
-        type EdgeType = OrientedEdge<T, V>;
-        type GraphType = OrientedGraph<T, V>;
-
-        fn serialize(&self) -> Result<String, SerializationError> {
-            let mut result = String::new();
-            for vertex in self.vertexes.clone() {
-                result.push_str(format!("{}\n", Self::serialize_vertex(vertex.borrow())).as_str());
-            }
-            result.push('#');
-            for edge in self.edges.clone() {
-                match Self::serialize_edge(edge.borrow()) {
-                    Ok(edge) => {
-                        result.push_str(format!("\n{}", edge).as_str());        
-                    },
-                    Err(e) => {
-                        return Err(e);
-                    }
-                }
-                
-            }
-            Ok(result)
+        fn remove_vertex_by_id(&mut self, id: usize) -> Result<(), GraphError> {
+            let vertex = self.get_vertex_by_id(id).ok_or(GraphError::VertexNotFound)?;
             
         }
-
-        fn serialize_vertex(vertex: Ref<Self::VertexType>) -> String {
-            String::from(format!(
-                "{} {}",
-                vertex.id().to_string(),
-                vertex.value().to_string().as_str()
-            ))
-        }
-
-        fn serialize_edge(edge: Ref<Self::EdgeType>) -> Result<String, SerializationError> {
-            if let (Some(start), Some(end)) = (edge.start(), edge.end()) {
-                return Ok(String::from(format!(
-                    "{} {} {}",
-                    start.borrow().id(),
-                    end.borrow().id(),
-                    if let Some(val) = edge.value() {
-                        val.to_string()
-                    } else {
-                        "".to_string()
-                    }
-                )));
-            }
-            Err(SerializationError::EdgeVertexNotFound)
-        }
     }
+
+
 }
