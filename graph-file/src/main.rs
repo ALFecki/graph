@@ -1,4 +1,5 @@
 use graph_lib::graph::graph::OrientedGraph;
+use graph_lib::serde::serde_graph::Deserialize;
 
 fn main() {
     let s = concat!(
