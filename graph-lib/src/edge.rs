@@ -6,13 +6,16 @@ pub mod edge {
     use crate::graph::graph::DefaultGraph;
     use crate::vertex::vertex::{DefaultVertex, Vertex};
 
-    pub trait DefaultEdge<T> {
-        type VertexType: DefaultVertex<T>;
+    pub trait DefaultEdge<T, V> {
+        type VertexType: DefaultVertex<T, V>;
         fn end(&self) -> Option<Rc<RefCell<Self::VertexType>>>;
         fn set_end(&mut self, vertex: &Rc<RefCell<Self::VertexType>>);
+        
+        fn value(&self) -> Option<&V>;
+        fn value_mut(&mut self) -> Option<&mut V>;
     }
 
-    pub trait DefaultOrientedEdge<T>: DefaultEdge<T> {
+    pub trait DefaultOrientedEdge<T, V>: DefaultEdge<T,V> {
         fn start(&self) -> Option<Rc<RefCell<Self::VertexType>>>;
         fn set_start(&mut self, vertex: &Rc<RefCell<Self::VertexType>>);
     }
@@ -41,9 +44,16 @@ pub mod edge {
                 value: Some(value)
             }
         }
+
+        pub(crate) fn new_with_value(value: V) -> Self {
+            Self {
+                value: Some(value),
+                ..Self::default()
+            }
+        }
     }
     
-    impl<T: Debug, V: Debug> DefaultEdge<T> for OrientedEdge<T, V> {
+    impl<T: Debug, V: Debug> DefaultEdge<T, V> for OrientedEdge<T, V> {
         type VertexType = Vertex<T, V>;
 
         fn end(&self) -> Option<Rc<RefCell<Self::VertexType>>> {
@@ -53,9 +63,17 @@ pub mod edge {
         fn set_end(&mut self, vertex: &Rc<RefCell<Self::VertexType>>) {
             self.end = Rc::downgrade(vertex)
         }
+
+        fn value(&self) -> Option<&V> {
+            Option::from(&self.value)
+        }
+
+        fn value_mut(&mut self) -> Option<&mut V> {
+            Option::from(&mut self.value)
+        }
     }
 
-    impl<T: Debug, V: Debug> DefaultOrientedEdge<T> for OrientedEdge<T, V> {
+    impl<T: Debug, V: Debug> DefaultOrientedEdge<T, V> for OrientedEdge<T, V> {
         fn start(&self) -> Option<Rc<RefCell<Self::VertexType>>> {
             self.start.upgrade()
         }

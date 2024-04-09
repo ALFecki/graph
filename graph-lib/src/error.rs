@@ -31,3 +31,9 @@ pub enum GraphParseError {
     #[error("Failed to parse value")]
     EdgeParsingError,
 }
+
+#[derive(Error, Debug)]
+pub enum GraphError {
+    #[error("Vertex is not found")]
+    VertexNotFound
+}

@@ -1,4 +1,5 @@
 pub mod serde_graph {
+    use std::cell::{Ref, RefCell};
     use std::fmt::Debug;
     use std::rc::Rc;
     use crate::edge::edge::DefaultEdge;
@@ -7,14 +8,20 @@ pub mod serde_graph {
     use crate::vertex::vertex::{DefaultVertex, Vertex};
 
     pub trait SerializeGraph<T, V> {
-        fn serialize(graph: impl DefaultGraph<T, V>) -> String;
-        fn serialize_vertex(vertex: impl DefaultVertex<T>) -> String;
-        fn serialize_edge(edge: impl DefaultEdge<T>) -> String;
+        type VertexType: DefaultVertex<T, V>;
+        type EdgeType: DefaultEdge<T, V>;
+        type GraphType: DefaultGraph<T, V>;
+        fn serialize(graph: Self::GraphType) -> String;
+        fn serialize_vertex(vertex: Self::VertexType) -> String;
+        fn serialize_edge(edge: Self::EdgeType) -> String;
     }
 
     pub trait Deserialize<T: Debug, V: Debug> {
-        fn deserialize(graph: &str) -> Result<impl DefaultGraph<T, V>, GraphParseError>;
-        fn deserialize_vertex(vertex: &str) -> Result<impl DefaultVertex<T>, VertexParseError>;
-        fn deserialize_edge(edge: &str, vertexes: Vec<Rc<Vertex<T, V>>>) -> Result<impl DefaultEdge<T>, EdgeParseError>;
+        type VertexType: DefaultVertex<T, V>;
+        type EdgeType: DefaultEdge<T, V>;
+        type GraphType: DefaultGraph<T, V>;
+        fn deserialize(graph: &str) -> Result<Self::GraphType, GraphParseError>;
+        fn deserialize_vertex(vertex: &str) -> Result<Self::VertexType, VertexParseError>;
+        fn deserialize_edge(edge: &str, vertexes: Vec<Rc<RefCell<Self::VertexType>>>) -> Result<Self::EdgeType, EdgeParseError>;
     }
 }
