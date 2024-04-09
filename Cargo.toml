@@ -4,7 +4,7 @@ edition = "2021"
 
 [workspace]
 resolver = "2"
-members = [ "graph-file", "graph-lib"]
+members = [ "graph-file", "graph-lib", "tests"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [workspace.dependencies]
