@@ -1,44 +1,66 @@
 pub mod edge {
+    use std::fmt::Debug;
+    use std::ptr::null;
     use std::rc::{Rc, Weak};
     use crate::graph::graph::DefaultGraph;
     use crate::vertex::vertex::{DefaultVertex, Vertex};
 
     pub trait DefaultEdge<T> {
         type VertexType: DefaultVertex<T>;
-        fn end(&self) -> Option<Rc<Self::VertexType>>;
+        fn end(&self) -> &Option<Rc<Self::VertexType>>;
+        fn end_mut(&mut self) -> &mut Option<Rc<Self::VertexType>>;
     }
 
     pub trait DefaultOrientedEdge<T>: DefaultEdge<T> {
-        fn start(&self) -> Option<Rc<Self::VertexType>>;
+        fn start(&self) -> &Option<Rc<Self::VertexType>>;
+        fn start_mut(&mut self) -> &mut Option<Rc<Self::VertexType>>;
     }
-
-    pub struct OrientedEdge<T, V> {
+    #[derive(Debug)]
+    pub struct OrientedEdge<T: Debug, V: Debug> {
         start: Weak<Vertex<T, V>>,
         end: Weak<Vertex<T, V>>,
-        value: V
+        value: Option<V>
     }
 
-    impl<T, V> OrientedEdge<T, V> {
+    impl<T: Debug, V: Debug> Default for OrientedEdge<T, V> {
+        fn default() -> Self {
+            Self {
+                start: Weak::default(),
+                end: Weak::default(),
+                value: None
+            }
+        }
+    }
+
+    impl<T: Debug, V: Debug> OrientedEdge<T, V> {
         pub(crate) fn new(start: &Rc<Vertex<T, V>>, end: &Rc<Vertex<T, V>>, value: V) -> Self {
             Self {
                 start: Rc::downgrade(&start),
                 end: Rc::downgrade(&end),
-                value
+                value: Some(value)
             }
         }
     }
     
-    impl<T, V> DefaultEdge<T> for OrientedEdge<T, V> {
+    impl<T: Debug, V: Debug> DefaultEdge<T> for OrientedEdge<T, V> {
         type VertexType = Vertex<T, V>;
 
-        fn end(&self) -> Option<Rc<Self::VertexType>> {
-            self.end.upgrade()
+        fn end(&self) -> &Option<Rc<Self::VertexType>> {
+            &self.end.upgrade()
+        }
+
+        fn end_mut(&mut self) -> &mut Option<Rc<Self::VertexType>> {
+            return &mut self.end.upgrade()
         }
     }
 
-    impl<T, V> DefaultOrientedEdge<T> for OrientedEdge<T, V> {
-        fn start(&self) -> Option<Rc<Self::VertexType>> {
-            self.start.upgrade()
+    impl<T: Debug, V: Debug> DefaultOrientedEdge<T> for OrientedEdge<T, V> {
+        fn start(&self) -> &Option<Rc<Self::VertexType>> {
+            &self.start.upgrade()
+        }
+
+        fn start_mut(&mut self) -> &mut Option<Rc<Self::VertexType>> {
+            &mut self.start.upgrade()
         }
     }
 }

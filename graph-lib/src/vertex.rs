@@ -1,4 +1,5 @@
 pub mod vertex {
+    use std::fmt::Debug;
     use std::ops::Add;
     use std::rc::Rc;
     use crate::edge::edge::{DefaultEdge, OrientedEdge};
@@ -16,14 +17,14 @@ pub mod vertex {
         fn get_id(&self) -> usize;
     }
 
-    // #[derive(PartialOrd, PartialEq)]
-    pub struct Vertex<T, V> {
+    #[derive(Debug)]
+    pub struct Vertex<T: Debug, V: Debug> {
         id: usize,
         value: T,
         edges: Vec<Rc<OrientedEdge<T, V>>>,
     }
     
-    impl<T, V> Vertex<T, V> {
+    impl<T: Debug, V: Debug> Vertex<T, V> {
         pub(crate) fn new(id: usize, value: T) -> Self {
             Self {
                 id,
@@ -33,7 +34,7 @@ pub mod vertex {
         }
     }
 
-    impl <T, V> DefaultVertex<T> for Vertex<T, V> {
+    impl <T: Debug, V: Debug> DefaultVertex<T> for Vertex<T, V> {
         type EdgeType = OrientedEdge<T, V>;
 
         // fn get_edges(&self) -> Vec<Self::EdgeType> {

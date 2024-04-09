@@ -1,5 +1,5 @@
 mod vertex;
 mod edge;
-mod graph;
+pub mod graph;
 mod serde;
 mod error;

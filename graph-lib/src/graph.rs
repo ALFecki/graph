@@ -1,4 +1,6 @@
 pub mod graph {
+    use std::fmt::Debug;
+    use std::ops::Deref;
     use std::rc::Rc;
     use std::str::FromStr;
 
@@ -14,7 +16,7 @@ pub mod graph {
         fn edges_count(&self) -> usize;
         fn get_vertexes(&self) -> Vec<Rc<Self::VertexType>>;
 
-        fn get_vertex_by_id(&self, id: usize) -> Option<&Rc<Self::VertexType>>;
+        fn get_vertex_by_id(&mut self, id: usize) -> Option<&mut Rc<Self::VertexType>>;
 
         fn add_edge(&mut self, edge: Self::EdgeType);
         fn add_edge_with_vertex_id(
@@ -29,13 +31,13 @@ pub mod graph {
         fn add_raw_vertex(&mut self, id: usize, value: T);
     }
 
-    // #[derive(Default)]
-    pub struct OrientedGraph<T, V> {
+    #[derive(Debug)]
+    pub struct OrientedGraph<T: Debug, V: Debug> {
         vertexes: Vec<Rc<Vertex<T, V>>>,
         edges: Vec<Rc<OrientedEdge<T, V>>>,
     }
 
-    impl<T, V> Default for OrientedGraph<T, V> {
+    impl<T: Debug, V: Debug> Default for OrientedGraph<T, V> {
         fn default() -> Self {
             Self {
                 vertexes: Vec::new(),
@@ -44,7 +46,7 @@ pub mod graph {
         }
     }
 
-    impl<T, V> DefaultGraph<T, V> for OrientedGraph<T, V> {
+    impl<T: Debug, V: Debug> DefaultGraph<T, V> for OrientedGraph<T, V> {
         type VertexType = Vertex<T, V>;
         type EdgeType = OrientedEdge<T, V>;
 
@@ -60,8 +62,8 @@ pub mod graph {
             self.vertexes.clone()
         }
 
-        fn get_vertex_by_id(&self, id: usize) -> Option<&Rc<Self::VertexType>> {
-            self.vertexes.iter().find(|&&p| p.get_id() == id)
+        fn get_vertex_by_id(&mut self, id: usize) -> Option<&mut Rc<Self::VertexType>> {
+            self.vertexes.iter_mut().find(|p| p.get_id() == id)
         }
 
         fn add_edge(&mut self, edge: Self::EdgeType) {
@@ -74,7 +76,13 @@ pub mod graph {
             end: usize,
             value: V,
         ) -> Result<(), String> {
-            if let (Some(mut start), Some(mut end)) =
+            let new_edge = Rc::new(OrientedEdge::<T, V>::default());
+            
+            if let Some(start) = self.get_vertex_by_id(start) {
+                
+            }
+            
+            if let (Some(start), Some(end)) =
                 (self.get_vertex_by_id(start), self.get_vertex_by_id(end))
             {
                 let new_edge = Rc::new(OrientedEdge::<T, V>::new(
@@ -99,7 +107,8 @@ pub mod graph {
         }
     }
 
-    impl<T: FromStr, V: FromStr> Deserialize<T, V> for OrientedGraph<T, V> {
+    impl<T: FromStr + Debug, V: FromStr + Debug> Deserialize<T, V> for OrientedGraph<T, V> {
+        
         fn deserialize(graph: &str) -> Result<OrientedGraph<T, V>, GraphParseError> {
             let mut graph_obj = Self::default();
             let mut deser_edges = false;
@@ -146,9 +155,11 @@ pub mod graph {
                             .find(|&p| p.get_id() == index)
                             .ok_or(EdgeParseError::VertexForEdgeIndexNotFound)
                     })?;
+                
                 let (start, value) = start_with_value
                     .split_once(char::is_whitespace)
                     .ok_or(EdgeParseError::EdgeParsingError)?;
+                
                 let start_vertex = start
                     .parse::<usize>()
                     .map_err(|_| EdgeParseError::EdgeStartParsingError)

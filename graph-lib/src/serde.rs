@@ -1,6 +1,6 @@
 pub mod serde_graph {
+    use std::fmt::Debug;
     use std::rc::Rc;
-    use GraphParseError::IndexParsingError;
     use crate::edge::edge::DefaultEdge;
     use crate::error::{EdgeParseError, GraphParseError, VertexParseError};
     use crate::graph::graph::DefaultGraph;
@@ -12,7 +12,7 @@ pub mod serde_graph {
         fn serialize_edge(edge: impl DefaultEdge<T>) -> String;
     }
 
-    pub trait Deserialize<T, V> {
+    pub trait Deserialize<T: Debug, V: Debug> {
         fn deserialize(graph: &str) -> Result<impl DefaultGraph<T, V>, GraphParseError>;
         fn deserialize_vertex(vertex: &str) -> Result<impl DefaultVertex<T>, VertexParseError>;
         fn deserialize_edge(edge: &str, vertexes: Vec<Rc<Vertex<T, V>>>) -> Result<impl DefaultEdge<T>, EdgeParseError>;
