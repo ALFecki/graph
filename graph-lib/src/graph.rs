@@ -1,10 +1,11 @@
 pub mod graph {
-    use crate::edge::edge::{DefaultEdge, Edge, OrientedEdge};
-    use crate::vertex::vertex::{DefaultVertex, Vertex};
-    
-    use std::rc::{Rc, Weak};
+    use std::rc::Rc;
+    use std::str::FromStr;
+
+    use crate::edge::edge::{DefaultEdge, OrientedEdge};
     use crate::error::GraphParseError;
     use crate::serde::serde_graph::Deserialize;
+    use crate::vertex::vertex::{DefaultVertex, Vertex};
 
     pub trait DefaultGraph<T> {
         type VertexType: DefaultVertex<T>;
@@ -17,7 +18,7 @@ pub mod graph {
 
         fn add_edge(&mut self, edge: Self::EdgeType);
         fn add_edge_with_vertex_id(&mut self, start: usize, end: usize) -> Result<(), String>;
-        
+
         fn add_vertex(&mut self, id: usize, value: T);
     }
 
@@ -68,19 +69,23 @@ pub mod graph {
             self.vertexes.push(Rc::new(Vertex::<T, OrientedEdge<T>>::new(id, value)))
         }
     }
-    
-    impl<T> Deserialize<T> for OrientedGraph<T> {
+
+    impl<T: FromStr> Deserialize<T> for OrientedGraph<T> {
         fn deserialize(graph: &str) -> Result<OrientedGraph<T>, GraphParseError> {
             todo!()
         }
 
         fn deserialize_vertex(vertex: &str) -> Result<Vertex<T, OrientedEdge<T>>, GraphParseError> {
-            let lines = vertex.split_whitespace();
-            let vertex_id = vertex.parse::<usize>().map_err(|_| GraphParseError::VertexParsingError);
+            if let Some((index, value)) = vertex.split_once(char::is_whitespace) {
+                let vertex_id = index.parse::<usize>().map_err(|_| GraphParseError::VertexIndexParsingError);
+                let value = index.parse::<T>().map_err(|_| GraphParseError::VertexValueParsingError);
+                return Ok(Vertex::<T, OrientedEdge<T>>::new(vertex_id.unwrap(), value.unwrap()));
+            }
+            Err(GraphParseError::VertexParsingError)
         }
 
         fn deserialize_edge(edge: &str) -> Result<OrientedEdge<T>, GraphParseError> {
-            todo!()
+            
         }
     }
 }
