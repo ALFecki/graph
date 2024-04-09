@@ -1,21 +1,21 @@
 pub mod edge {
+    use crate::graph::graph::DefaultGraph;
+    use crate::vertex::vertex::{DefaultVertex, Vertex};
     use std::cell::RefCell;
     use std::fmt::Debug;
     use std::ptr::null;
     use std::rc::{Rc, Weak};
-    use crate::graph::graph::DefaultGraph;
-    use crate::vertex::vertex::{DefaultVertex, Vertex};
 
     pub trait DefaultEdge<T, V> {
         type VertexType: DefaultVertex<T, V>;
         fn end(&self) -> Option<Rc<RefCell<Self::VertexType>>>;
         fn set_end(&mut self, vertex: &Rc<RefCell<Self::VertexType>>);
-        
+
         fn value(&self) -> Option<&V>;
         fn value_mut(&mut self) -> Option<&mut V>;
     }
 
-    pub trait DefaultOrientedEdge<T, V>: DefaultEdge<T,V> {
+    pub trait DefaultOrientedEdge<T, V>: DefaultEdge<T, V> {
         fn start(&self) -> Option<Rc<RefCell<Self::VertexType>>>;
         fn set_start(&mut self, vertex: &Rc<RefCell<Self::VertexType>>);
     }
@@ -23,7 +23,7 @@ pub mod edge {
     pub struct OrientedEdge<T: Debug, V: Debug> {
         start: Weak<RefCell<Vertex<T, V>>>,
         end: Weak<RefCell<Vertex<T, V>>>,
-        value: Option<V>
+        value: Option<V>,
     }
 
     impl<T: Debug, V: Debug> Default for OrientedEdge<T, V> {
@@ -31,17 +31,21 @@ pub mod edge {
             Self {
                 start: Weak::default(),
                 end: Weak::default(),
-                value: None
+                value: None,
             }
         }
     }
 
     impl<T: Debug, V: Debug> OrientedEdge<T, V> {
-        pub(crate) fn new(start: &Rc<RefCell<Vertex<T, V>>>, end: &Rc<RefCell<Vertex<T, V>>>, value: V) -> Self {
+        pub(crate) fn new(
+            start: &Rc<RefCell<Vertex<T, V>>>,
+            end: &Rc<RefCell<Vertex<T, V>>>,
+            value: V,
+        ) -> Self {
             Self {
                 start: Rc::downgrade(&start),
                 end: Rc::downgrade(&end),
-                value: Some(value)
+                value: Some(value),
             }
         }
 
@@ -52,7 +56,7 @@ pub mod edge {
             }
         }
     }
-    
+
     impl<T: Debug, V: Debug> DefaultEdge<T, V> for OrientedEdge<T, V> {
         type VertexType = Vertex<T, V>;
 

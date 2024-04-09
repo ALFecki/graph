@@ -91,7 +91,7 @@ pub mod graph {
                 edge.borrow_mut().set_end(&end);
                 end.borrow_mut().add_neighbor(edge.clone())
             }
-            
+
             self.edges.push(edge);
             Ok(())
         }
@@ -106,9 +106,9 @@ pub mod graph {
     }
 
     impl<T: FromStr + Debug, V: FromStr + Debug> Deserialize<T, V> for OrientedGraph<T, V> {
-        type VertexType = Vertex<T,V>;
+        type VertexType = Vertex<T, V>;
         type EdgeType = OrientedEdge<T, V>;
-        type GraphType = OrientedGraph<T,V>;
+        type GraphType = OrientedGraph<T, V>;
 
         fn deserialize(graph: &str) -> Result<Self::GraphType, GraphParseError> {
             let mut graph_obj = Self::default();
@@ -148,7 +148,7 @@ pub mod graph {
 
         fn deserialize_edge(
             edge: &str,
-            vertexes: Vec<Rc<RefCell<Self::VertexType>>>
+            vertexes: Vec<Rc<RefCell<Self::VertexType>>>,
         ) -> Result<Self::EdgeType, EdgeParseError> {
             return if let Some((end, start_with_value)) = edge.split_once(char::is_whitespace) {
                 let end_vertex = end

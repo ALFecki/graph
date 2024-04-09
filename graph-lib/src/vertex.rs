@@ -1,11 +1,10 @@
 pub mod vertex {
+    use crate::edge::edge::{DefaultEdge, OrientedEdge};
     use std::cell::RefCell;
     use std::fmt::Debug;
     use std::ops::Add;
     use std::rc::Rc;
-    use crate::edge::edge::{DefaultEdge, OrientedEdge};
 
-    
     pub trait DefaultVertex<T, V> {
         type EdgeType: DefaultEdge<T, V>;
 
@@ -24,18 +23,18 @@ pub mod vertex {
         value: T,
         edges: Vec<Rc<RefCell<OrientedEdge<T, V>>>>,
     }
-    
+
     impl<T: Debug, V: Debug> Vertex<T, V> {
         pub(crate) fn new(id: usize, value: T) -> Self {
             Self {
                 id,
                 value,
-                edges: Vec::default()
+                edges: Vec::default(),
             }
         }
     }
 
-    impl <T: Debug, V: Debug> DefaultVertex<T, V> for Vertex<T, V> {
+    impl<T: Debug, V: Debug> DefaultVertex<T, V> for Vertex<T, V> {
         type EdgeType = OrientedEdge<T, V>;
 
         // fn get_edges(&self) -> Vec<Self::EdgeType> {
@@ -50,7 +49,6 @@ pub mod vertex {
             // self.edges.iter().find(|&&p| if let Some(end) = p.end() {end.get_id() == vertex_id} else {})
         }
 
-
         fn remove_neighbor(&self, vertex: impl DefaultVertex<T, V>) -> Result<(), ()> {
             todo!()
         }
@@ -59,5 +57,4 @@ pub mod vertex {
             self.id
         }
     }
-
 }
