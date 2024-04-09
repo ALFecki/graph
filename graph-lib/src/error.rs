@@ -27,7 +27,7 @@ pub enum EdgeParseError {
 #[derive(Error, Debug)]
 pub enum GraphParseError {
     #[error("Failed to parse index")]
-    IndexParsingError,
+    VertexParsingError,
     #[error("Failed to parse value")]
-    ValueParsingError,
+    EdgeParsingError,
 }

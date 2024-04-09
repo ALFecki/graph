@@ -13,7 +13,7 @@ pub mod serde_graph {
     }
 
     pub trait Deserialize<T, V> {
-        fn deserialize(graph: &str) -> Result<impl DefaultGraph<T, V>, VertexParseError>;
+        fn deserialize(graph: &str) -> Result<impl DefaultGraph<T, V>, GraphParseError>;
         fn deserialize_vertex(vertex: &str) -> Result<impl DefaultVertex<T>, VertexParseError>;
         fn deserialize_edge(edge: &str, vertexes: Vec<Rc<Vertex<T, V>>>) -> Result<impl DefaultEdge<T>, EdgeParseError>;
     }
