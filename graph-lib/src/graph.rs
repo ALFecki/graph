@@ -17,7 +17,7 @@ pub mod graph {
         fn edges_count(&self) -> usize;
         fn get_vertexes(&self) -> Rc<&Vec<Self::VertexType>>;
 
-        fn get_vertex_by_id(&mut self, id: usize) -> Option<RefMut<&Self::VertexType>>;
+        fn get_vertex_by_id(&mut self, id: usize) -> Option<Rc<RefCell<&Self::VertexType>>>;
 
         fn add_edge(&mut self, edge: Self::EdgeType);
         fn add_edge_with_vertex_id(
@@ -63,9 +63,9 @@ pub mod graph {
             Rc::new(&self.vertexes)
         }
 
-        fn get_vertex_by_id(&mut self, id: usize) -> Option<RefMut<&Self::VertexType>> {
+        fn get_vertex_by_id(&mut self, id: usize) -> Option<Rc<RefCell<&Self::VertexType>>> {
              if let Some(founded) = self.vertexes.iter().find(|&p| p.get_id() == id) {
-                 return Some(Rc::new(RefCell::new(founded)).borrow_mut());
+                 return Some(Rc::new(RefCell::new(founded)));
             }
             None
         }
@@ -84,8 +84,8 @@ pub mod graph {
             let mut_edge = Rc::get_mut(&mut edge).ok_or("Cannot create edge mutable")?;
 
             if let Some(mut start) = self.get_vertex_by_id(start) {
+                mut_edge.set_start(&start);
                 start.add_neighbor(edge);
-                mut_edge.set_start(Rc::downgrade(start));
             }
             
             if let Some(mut end) = self.get_vertex_by_id(end) {
