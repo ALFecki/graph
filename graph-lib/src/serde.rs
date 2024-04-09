@@ -1,6 +1,6 @@
 pub mod serde_graph {
     use crate::edge::edge::DefaultEdge;
-    use crate::error::{EdgeParseError, GraphParseError, VertexParseError};
+    use crate::error::{EdgeParseError, GraphParseError, SerializationError, VertexParseError};
     use crate::graph::graph::DefaultGraph;
     use crate::vertex::vertex::{DefaultVertex, Vertex};
     use std::cell::{Ref, RefCell};
@@ -11,12 +11,12 @@ pub mod serde_graph {
         type VertexType: DefaultVertex<T, V>;
         type EdgeType: DefaultEdge<T, V>;
         type GraphType: DefaultGraph<T, V>;
-        fn serialize(graph: Self::GraphType) -> String;
-        fn serialize_vertex(vertex: Self::VertexType) -> String;
-        fn serialize_edge(edge: Self::EdgeType) -> String;
+        fn serialize(&self) -> Result<String, SerializationError>;
+        fn serialize_vertex(vertex: Ref<Self::VertexType>) -> String;
+        fn serialize_edge(edge: Ref<Self::EdgeType>) -> Result<String, SerializationError>;
     }
 
-    pub trait Deserialize<T: Debug, V: Debug> {
+    pub trait DeserializeGraph<T: Debug, V: Debug> {
         type VertexType: DefaultVertex<T, V>;
         type EdgeType: DefaultEdge<T, V>;
         type GraphType: DefaultGraph<T, V>;

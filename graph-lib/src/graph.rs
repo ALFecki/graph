@@ -1,13 +1,15 @@
 pub mod graph {
-    use std::cell::{RefCell, RefMut};
-    use std::fmt::Debug;
+    use std::cell::{Ref, RefCell, RefMut};
+    use std::fmt::{format, Debug};
     use std::ops::Deref;
     use std::rc::Rc;
     use std::str::FromStr;
 
     use crate::edge::edge::{DefaultEdge, DefaultOrientedEdge, OrientedEdge};
-    use crate::error::{EdgeParseError, GraphError, GraphParseError, VertexParseError};
-    use crate::serde::serde_graph::Deserialize;
+    use crate::error::{
+        EdgeParseError, GraphError, GraphParseError, SerializationError, VertexParseError,
+    };
+    use crate::serde::serde_graph::{DeserializeGraph, SerializeGraph};
     use crate::vertex::vertex::{DefaultVertex, Vertex};
 
     pub trait DefaultGraph<T, V> {
@@ -64,7 +66,7 @@ pub mod graph {
         }
 
         fn get_vertex_by_id(&mut self, id: usize) -> Option<Rc<RefCell<Self::VertexType>>> {
-            if let Some(founded) = self.vertexes.iter().find(|&p| p.borrow().get_id() == id) {
+            if let Some(founded) = self.vertexes.iter().find(|&p| p.borrow().id() == id) {
                 return Some(founded.clone());
             }
             None
@@ -80,14 +82,14 @@ pub mod graph {
             end: usize,
             value: V,
         ) -> Result<(), GraphError> {
-            let mut edge = Rc::new(RefCell::new(OrientedEdge::<T, V>::new_with_value(value)));
+            let edge = Rc::new(RefCell::new(OrientedEdge::<T, V>::new_with_value(value)));
 
-            if let Some(mut start) = self.get_vertex_by_id(start) {
+            if let Some(start) = self.get_vertex_by_id(start) {
                 edge.borrow_mut().set_start(&start);
                 start.borrow_mut().add_neighbor(edge.clone());
             }
 
-            if let Some(mut end) = self.get_vertex_by_id(end) {
+            if let Some(end) = self.get_vertex_by_id(end) {
                 edge.borrow_mut().set_end(&end);
                 end.borrow_mut().add_neighbor(edge.clone())
             }
@@ -105,7 +107,7 @@ pub mod graph {
         }
     }
 
-    impl<T: FromStr + Debug, V: FromStr + Debug> Deserialize<T, V> for OrientedGraph<T, V> {
+    impl<T: FromStr + Debug, V: FromStr + Debug> DeserializeGraph<T, V> for OrientedGraph<T, V> {
         type VertexType = Vertex<T, V>;
         type EdgeType = OrientedEdge<T, V>;
         type GraphType = OrientedGraph<T, V>;
@@ -150,28 +152,28 @@ pub mod graph {
             edge: &str,
             vertexes: Vec<Rc<RefCell<Self::VertexType>>>,
         ) -> Result<Self::EdgeType, EdgeParseError> {
-            return if let Some((end, start_with_value)) = edge.split_once(char::is_whitespace) {
-                let end_vertex = end
+            return if let Some((start, end_with_value)) = edge.split_once(char::is_whitespace) {
+                let start_vertex = start
                     .parse::<usize>()
                     .map_err(|_| EdgeParseError::EdgeEndParsingError)
                     .and_then(|index| {
                         vertexes
                             .iter()
-                            .find(|&p| p.borrow().get_id() == index)
+                            .find(|&p| p.borrow().id() == index)
                             .ok_or(EdgeParseError::VertexForEdgeIndexNotFound)
                     })?;
 
-                let (start, value) = start_with_value
+                let (end, value) = end_with_value
                     .split_once(char::is_whitespace)
                     .ok_or(EdgeParseError::EdgeParsingError)?;
 
-                let start_vertex = start
+                let end_vertex = end
                     .parse::<usize>()
                     .map_err(|_| EdgeParseError::EdgeStartParsingError)
                     .and_then(|index| {
                         vertexes
                             .iter()
-                            .find(|&p| p.borrow().get_id() == index)
+                            .find(|&p| p.borrow().id() == index)
                             .ok_or(EdgeParseError::VertexForEdgeIndexNotFound)
                     })?;
                 let value = value
@@ -181,6 +183,57 @@ pub mod graph {
             } else {
                 Err(EdgeParseError::EdgeParsingError)
             };
+        }
+    }
+
+    impl<T: Debug + ToString, V: Debug + ToString> SerializeGraph<T, V> for OrientedGraph<T, V> {
+        type VertexType = Vertex<T, V>;
+        type EdgeType = OrientedEdge<T, V>;
+        type GraphType = OrientedGraph<T, V>;
+
+        fn serialize(&self) -> Result<String, SerializationError> {
+            let mut result = String::new();
+            for vertex in self.vertexes.clone() {
+                result.push_str(format!("{}\n", Self::serialize_vertex(vertex.borrow())).as_str());
+            }
+            result.push('#');
+            for edge in self.edges.clone() {
+                match Self::serialize_edge(edge.borrow()) {
+                    Ok(edge) => {
+                        result.push_str(format!("\n{}", edge).as_str());        
+                    },
+                    Err(e) => {
+                        return Err(e);
+                    }
+                }
+                
+            }
+            Ok(result)
+            
+        }
+
+        fn serialize_vertex(vertex: Ref<Self::VertexType>) -> String {
+            String::from(format!(
+                "{} {}",
+                vertex.id().to_string(),
+                vertex.value().to_string().as_str()
+            ))
+        }
+
+        fn serialize_edge(edge: Ref<Self::EdgeType>) -> Result<String, SerializationError> {
+            if let (Some(start), Some(end)) = (edge.start(), edge.end()) {
+                return Ok(String::from(format!(
+                    "{} {} {}",
+                    start.borrow().id(),
+                    end.borrow().id(),
+                    if let Some(val) = edge.value() {
+                        val.to_string()
+                    } else {
+                        "".to_string()
+                    }
+                )));
+            }
+            Err(SerializationError::EdgeVertexNotFound)
         }
     }
 }

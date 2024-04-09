@@ -14,7 +14,8 @@ pub mod vertex {
 
         fn remove_neighbor(&self, vertex: impl DefaultVertex<T, V>) -> Result<(), ()>;
 
-        fn get_id(&self) -> usize;
+        fn id(&self) -> usize;
+        fn value(&self) -> &T;
     }
 
     #[derive(Debug, Clone)]
@@ -53,8 +54,12 @@ pub mod vertex {
             todo!()
         }
 
-        fn get_id(&self) -> usize {
+        fn id(&self) -> usize {
             self.id
+        }
+
+        fn value(&self) -> &T {
+            &self.value
         }
     }
 }

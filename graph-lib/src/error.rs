@@ -37,3 +37,9 @@ pub enum GraphError {
     #[error("Vertex is not found")]
     VertexNotFound,
 }
+
+#[derive(Error, Debug)]
+pub enum SerializationError {
+    #[error("Edge has no one of the vertexes")]
+    EdgeVertexNotFound,
+}
