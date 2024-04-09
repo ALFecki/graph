@@ -45,7 +45,7 @@ pub mod vertex {
         }
 
         fn find_neighbor(&self, vertex_id: usize) {
-            self.edges.iter().find(|&&p| if let Some(end) = p.end() {end.get_id() == vertex_id} else {})
+            // self.edges.iter().find(|&&p| if let Some(end) = p.end() {end.get_id() == vertex_id} else {})
         }
 
 

@@ -7,7 +7,7 @@ pub mod graph {
     use crate::serde::serde_graph::Deserialize;
     use crate::vertex::vertex::{DefaultVertex, Vertex};
 
-    pub trait DefaultGraph<T> {
+    pub trait DefaultGraph<T, V> {
         type VertexType: DefaultVertex<T>;
         type EdgeType: DefaultEdge<T>;
         fn vertex_count(&self) -> usize;
@@ -17,19 +17,19 @@ pub mod graph {
         fn get_vertex_by_id(&self, id: usize) -> Option<&Rc<Self::VertexType>>;
 
         fn add_edge(&mut self, edge: Self::EdgeType);
-        fn add_edge_with_vertex_id(&mut self, start: usize, end: usize) -> Result<(), String>;
+        fn add_edge_with_vertex_id(&mut self, start: usize, end: usize, value: V) -> Result<(), String>;
 
         fn add_vertex(&mut self, id: usize, value: T);
     }
 
-    pub struct OrientedGraph<T> {
-        vertexes: Vec<Rc<Vertex<T, OrientedEdge<T>>>>,
-        edges: Vec<Rc<OrientedEdge<T>>>,
+    pub struct OrientedGraph<T, V> {
+        vertexes: Vec<Rc<Vertex<T, OrientedEdge<T, V>>>>,
+        edges: Vec<Rc<OrientedEdge<T, V>>>,
     }
 
-    impl<T> DefaultGraph<T> for OrientedGraph<T> {
-        type VertexType = Vertex<T, OrientedEdge<T>>;
-        type EdgeType = OrientedEdge<T>;
+    impl<T, V> DefaultGraph<T, V> for OrientedGraph<T, V> {
+        type VertexType = Vertex<T, OrientedEdge<T, V>>;
+        type EdgeType = OrientedEdge<T, V>;
 
         fn vertex_count(&self) -> usize {
             self.vertexes.len()
@@ -51,11 +51,11 @@ pub mod graph {
             self.edges.push(Rc::new(edge))
         }
 
-        fn add_edge_with_vertex_id(&mut self, start: usize, end: usize) -> Result<(), String> {
+        fn add_edge_with_vertex_id(&mut self, start: usize, end: usize, value: V) -> Result<(), String> {
             if let (Some(mut start), Some(mut end)) =
                 (self.get_vertex_by_id(start), self.get_vertex_by_id(end))
             {
-                let new_edge = Rc::new(OrientedEdge::<T>::new(start.clone(), end.clone()));
+                let new_edge = Rc::new(OrientedEdge::<T, V>::new(start.clone(), end.clone(), value));
                 start.add_neighbor(Rc::clone(&new_edge));
                 end.add_neighbor(Rc::clone(&new_edge));
                 self.edges.push(new_edge);
@@ -66,26 +66,29 @@ pub mod graph {
         }
 
         fn add_vertex(&mut self, id: usize, value: T) {
-            self.vertexes.push(Rc::new(Vertex::<T, OrientedEdge<T>>::new(id, value)))
+            self.vertexes.push(Rc::new(Vertex::<T, OrientedEdge<T, V>>::new(id, value)))
         }
     }
 
-    impl<T: FromStr> Deserialize<T> for OrientedGraph<T> {
-        fn deserialize(graph: &str) -> Result<OrientedGraph<T>, GraphParseError> {
+    impl<T: FromStr, V> Deserialize<T, V> for OrientedGraph<T, V> {
+        fn deserialize(graph: &str) -> Result<OrientedGraph<T, V>, GraphParseError> {
             todo!()
         }
 
-        fn deserialize_vertex(vertex: &str) -> Result<Vertex<T, OrientedEdge<T>>, GraphParseError> {
+        fn deserialize_vertex(vertex: &str) -> Result<Vertex<T, OrientedEdge<T, V>>, GraphParseError> {
             if let Some((index, value)) = vertex.split_once(char::is_whitespace) {
                 let vertex_id = index.parse::<usize>().map_err(|_| GraphParseError::VertexIndexParsingError);
-                let value = index.parse::<T>().map_err(|_| GraphParseError::VertexValueParsingError);
-                return Ok(Vertex::<T, OrientedEdge<T>>::new(vertex_id.unwrap(), value.unwrap()));
+                let value = value.parse::<T>().map_err(|_| GraphParseError::VertexValueParsingError);
+                return Ok(Vertex::<T, OrientedEdge<T, V>>::new(vertex_id?, value?));
             }
             Err(GraphParseError::VertexParsingError)
         }
 
-        fn deserialize_edge(edge: &str) -> Result<OrientedEdge<T>, GraphParseError> {
-            
+        fn deserialize_edge(edge: &str, vertexes: Vec<Rc<Vertex<T, OrientedEdge<T, V>>>>) -> Result<OrientedEdge<T, V>, GraphParseError> {
+            if let Some((end, start_with_value)) = edge.split_once(char::is_whitespace) {
+                // let end_vertex =
+            }
+            todo!()
         }
     }
 }

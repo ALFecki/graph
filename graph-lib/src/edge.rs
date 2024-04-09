@@ -9,47 +9,37 @@ pub mod edge {
     }
 
     pub trait DefaultOrientedEdge<T>: DefaultEdge<T> {
-        fn start(&self) ->  Option<Rc<Self::VertexType>>;
+        fn start(&self) -> Option<Rc<Self::VertexType>>;
     }
 
-    pub struct Edge<T> {
-        end: Weak<Vertex<T, Edge<T>>>
+    pub struct OrientedEdge<T, V> {
+        start: Weak<Vertex<T, OrientedEdge<T, V>>>,
+        end: Weak<Vertex<T, OrientedEdge<T, V>>>,
+        value: V
     }
 
-    impl<T> DefaultEdge<T> for Edge<T> {
-        type VertexType = Vertex<T, Edge<T>>;
-
-        fn end(&self) -> Option<Rc<Self::VertexType>> {
-            self.end.upgrade()
-        }
-    }
-
-    pub struct OrientedEdge<T> {
-        start: Weak<Vertex<T, OrientedEdge<T>>>,
-        end:Weak<Vertex<T, OrientedEdge<T>>>
-    }
-
-    impl<T> OrientedEdge<T> {
-        pub(crate) fn new(start: Rc<Vertex<T, OrientedEdge<T>>>, end: Rc<Vertex<T, OrientedEdge<T>>>) -> Self {
+    impl<T, V> OrientedEdge<T, V> {
+        pub(crate) fn new(start: Rc<Vertex<T, OrientedEdge<T, V>>>, end: Rc<Vertex<T, OrientedEdge<T, V>>>, value: V) -> Self {
             Self {
                 start: Rc::downgrade(&start),
-                end: Rc::downgrade(&end)
+                end: Rc::downgrade(&end),
+                value
             }
         }
     }
 
 
-    impl<T> DefaultEdge<T> for OrientedEdge<T> {
-        type VertexType = Vertex<T, OrientedEdge<T>>;
+    impl<T, V> DefaultEdge<T> for OrientedEdge<T, V> {
+        type VertexType = Vertex<T, OrientedEdge<T, V>>;
 
         fn end(&self) -> Option<Rc<Self::VertexType>> {
             self.end.upgrade()
         }
     }
-    impl<T> DefaultOrientedEdge<T> for OrientedEdge<T> {
+
+    impl<T, V> DefaultOrientedEdge<T> for OrientedEdge<T, V> {
         fn start(&self) -> Option<Rc<Self::VertexType>> {
             self.start.upgrade()
         }
     }
-
 }
