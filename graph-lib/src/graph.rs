@@ -115,23 +115,22 @@ pub mod graph {
 
         fn remove_edge_by_vertex_id(&mut self, start: usize, end: usize) -> Result<(), GraphError> {
             let vertex = self.get_vertex_by_id(start).ok_or(GraphError::VertexNotFound)?;
-            return vertex.borrow_mut().remove_neighbor_by_position(end);
+            vertex.borrow_mut().remove_neighbor_by_position(end)?;
+            Ok(())
         }
 
         fn remove_vertex(&mut self, vertex: Self::VertexType) -> Result<(), GraphError> {
             self.vertexes.retain(|v| v.borrow().id() != vertex.id());
 
             for edge in vertex.get_edges() {
-                let start_id = edge.borrow().start_id();
-                let end_id = edge.borrow().end_id();
 
-                if start_id != Some(vertex.id()) {
+                if edge.borrow().start_id() != Some(vertex.id()) {
                     if let Some(start) = edge.borrow().start() {
                         start.borrow_mut().remove_neighbor_by_position(vertex.id())?;
                     }
                 }
 
-                if end_id != Some(vertex.id()) {
+                if edge.borrow().end_id() != Some(vertex.id()) {
                     if let Some(end) = edge.borrow().end() {
                         end.borrow_mut().remove_neighbor_by_position(vertex.id())?;
                     }

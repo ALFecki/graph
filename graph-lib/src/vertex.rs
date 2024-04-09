@@ -59,8 +59,8 @@ pub mod vertex {
         fn remove_neighbor_by_position(&mut self, remove_id: usize) -> Result<(), GraphError> {
             if let Some(pos) = self.edges.iter().position(|p| {
                 let borrow = p.borrow();
-                (borrow.start_id() == Some(self.id) && borrow.end_id() == Some(remove_id))
-                    || (borrow.start_id() == Some(remove_id) && borrow.end_id() == Some(self.id))
+                (borrow.start_id() == Some(self.id()) && borrow.end_id() == Some(remove_id))
+                    || (borrow.start_id() == Some(remove_id) && borrow.end_id() == Some(self.id()))
             }) {
                 self.edges.remove(pos);
                 return Ok(());
