@@ -36,6 +36,8 @@ pub enum GraphParseError {
 pub enum GraphError {
     #[error("Vertex is not found")]
     VertexNotFound,
+    #[error("Edge is not found")]
+    EdgeNotFound,
 }
 
 #[derive(Error, Debug)]

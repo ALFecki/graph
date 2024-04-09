@@ -9,6 +9,7 @@ pub mod edge {
     pub trait DefaultEdge<T, V> {
         type VertexType: DefaultVertex<T, V>;
         fn end(&self) -> Option<Rc<RefCell<Self::VertexType>>>;
+        fn end_id(&self) -> Option<usize>;
         fn set_end(&mut self, vertex: &Rc<RefCell<Self::VertexType>>);
 
         fn value(&self) -> Option<&V>;
@@ -17,6 +18,7 @@ pub mod edge {
 
     pub trait DefaultOrientedEdge<T, V>: DefaultEdge<T, V> {
         fn start(&self) -> Option<Rc<RefCell<Self::VertexType>>>;
+        fn start_id(&self) -> Option<usize>;
         fn set_start(&mut self, vertex: &Rc<RefCell<Self::VertexType>>);
     }
     #[derive(Debug)]
@@ -64,6 +66,10 @@ pub mod edge {
             self.end.upgrade()
         }
 
+        fn end_id(&self) -> Option<usize> {
+            self.end.upgrade().map(|val| val.borrow().id())
+        }
+
         fn set_end(&mut self, vertex: &Rc<RefCell<Self::VertexType>>) {
             self.end = Rc::downgrade(vertex)
         }
@@ -80,6 +86,11 @@ pub mod edge {
     impl<T: Debug, V: Debug> DefaultOrientedEdge<T, V> for OrientedEdge<T, V> {
         fn start(&self) -> Option<Rc<RefCell<Self::VertexType>>> {
             self.start.upgrade()
+        }
+
+        fn start_id(&self) -> Option<usize> {
+            self.start.upgrade().map(|val| val.borrow().id())
+
         }
 
         fn set_start(&mut self, vertex: &Rc<RefCell<Self::VertexType>>) {
