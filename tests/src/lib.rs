@@ -58,6 +58,15 @@ mod tests {
         assert_eq!(res.edges_count(), 3);
     }
     
-    
+    #[test]
+    fn remove_edge() {
+        let mut res =OrientedGraph::<String, String>::deserialize(GRAPH_STR).unwrap();
+        res.add_raw_vertex(3, "Test".to_string());
+        res.add_edge_with_vertex_id(1, 2, "Edge 1-2".to_string()).unwrap();
+        res.add_edge_with_vertex_id(2, 3, "Edge 2-3".to_string()).unwrap();
+        assert_eq!(res.edges_count(), 3);
+        res.remove_edge_by_vertex_id(2, 3);
+        assert_eq!(res.edges_count(), 2);
+    }
     
 }
