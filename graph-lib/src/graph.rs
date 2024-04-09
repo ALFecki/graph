@@ -22,6 +22,7 @@ pub mod graph {
         fn add_vertex(&mut self, id: usize, value: T);
     }
 
+    #[derive(Default)]
     pub struct OrientedGraph<T, V> {
         vertexes: Vec<Rc<Vertex<T, V>>>,
         edges: Vec<Rc<OrientedEdge<T, V>>>,
@@ -72,8 +73,20 @@ pub mod graph {
 
     impl<T: FromStr, V: FromStr> Deserialize<T, V> for OrientedGraph<T, V> {
         fn deserialize(graph: &str) -> Result<OrientedGraph<T, V>, VertexParseError> {
-            let lines = graph.lines();
-            
+            let mut graph = Self::default();
+            let mut deser_edges = false;
+            for line in graph.lines() {
+                if line.starts_with("#") {
+                    deser_edges = true;
+                    continue
+                }
+                if deser_edges {
+                    
+                }
+            }
+
+            todo!()
+
         }
 
         fn deserialize_vertex(vertex: &str) -> Result<Vertex<T, V>, VertexParseError> {
