@@ -1,7 +1,7 @@
 pub mod vertex {
     use std::ops::Add;
     use std::rc::Rc;
-    use crate::edge::edge::DefaultEdge;
+    use crate::edge::edge::{DefaultEdge, OrientedEdge};
 
     
     pub trait DefaultVertex<T> {
@@ -16,14 +16,14 @@ pub mod vertex {
         fn get_id(&self) -> usize;
     }
 
-    #[derive(PartialOrd, PartialEq)]
-    pub struct Vertex<T, E: DefaultEdge<T>> {
+    // #[derive(PartialOrd, PartialEq)]
+    pub struct Vertex<T, V> {
         id: usize,
         value: T,
-        edges: Vec<Rc<E>>,
+        edges: Vec<Rc<OrientedEdge<T, V>>>,
     }
     
-    impl<T, E: DefaultEdge<T>> Vertex<T, E> {
+    impl<T, V> Vertex<T, V> {
         pub(crate) fn new(id: usize, value: T) -> Self {
             Self {
                 id,
@@ -33,8 +33,8 @@ pub mod vertex {
         }
     }
 
-    impl <T, E: DefaultEdge<T>> DefaultVertex<T> for Vertex<T, E> {
-        type EdgeType = E;
+    impl <T, V> DefaultVertex<T> for Vertex<T, V> {
+        type EdgeType = OrientedEdge<T, V>;
 
         // fn get_edges(&self) -> Vec<Self::EdgeType> {
         //     self.edges

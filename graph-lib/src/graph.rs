@@ -23,12 +23,12 @@ pub mod graph {
     }
 
     pub struct OrientedGraph<T, V> {
-        vertexes: Vec<Rc<Vertex<T, OrientedEdge<T, V>>>>,
+        vertexes: Vec<Rc<Vertex<T, V>>>,
         edges: Vec<Rc<OrientedEdge<T, V>>>,
     }
 
     impl<T, V> DefaultGraph<T, V> for OrientedGraph<T, V> {
-        type VertexType = Vertex<T, OrientedEdge<T, V>>;
+        type VertexType = Vertex<T, V>;
         type EdgeType = OrientedEdge<T, V>;
 
         fn vertex_count(&self) -> usize {
@@ -66,7 +66,7 @@ pub mod graph {
         }
 
         fn add_vertex(&mut self, id: usize, value: T) {
-            self.vertexes.push(Rc::new(Vertex::<T, OrientedEdge<T, V>>::new(id, value)))
+            self.vertexes.push(Rc::new(Vertex::<T, V>::new(id, value)))
         }
     }
 
@@ -75,11 +75,11 @@ pub mod graph {
             todo!()
         }
 
-        fn deserialize_vertex(vertex: &str) -> Result<Vertex<T, OrientedEdge<T, V>>, GraphParseError> {
+        fn deserialize_vertex(vertex: &str) -> Result<Vertex<T, V>, GraphParseError> {
             if let Some((index, value)) = vertex.split_once(char::is_whitespace) {
                 let vertex_id = index.parse::<usize>().map_err(|_| GraphParseError::VertexIndexParsingError);
                 let value = value.parse::<T>().map_err(|_| GraphParseError::VertexValueParsingError);
-                return Ok(Vertex::<T, OrientedEdge<T, V>>::new(vertex_id?, value?));
+                return Ok(Vertex::<T, V>::new(vertex_id?, value?));
             }
             Err(GraphParseError::VertexParsingError)
         }

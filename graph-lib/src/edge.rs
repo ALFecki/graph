@@ -13,13 +13,13 @@ pub mod edge {
     }
 
     pub struct OrientedEdge<T, V> {
-        start: Weak<Vertex<T, OrientedEdge<T, V>>>,
-        end: Weak<Vertex<T, OrientedEdge<T, V>>>,
+        start: Weak<Vertex<T, V>>,
+        end: Weak<Vertex<T, V>>,
         value: V
     }
 
     impl<T, V> OrientedEdge<T, V> {
-        pub(crate) fn new(start: Rc<Vertex<T, OrientedEdge<T, V>>>, end: Rc<Vertex<T, OrientedEdge<T, V>>>, value: V) -> Self {
+        pub(crate) fn new(start: Rc<Vertex<T, V>>, end: Rc<Vertex<T, V>>, value: V) -> Self {
             Self {
                 start: Rc::downgrade(&start),
                 end: Rc::downgrade(&end),
@@ -30,7 +30,7 @@ pub mod edge {
 
 
     impl<T, V> DefaultEdge<T> for OrientedEdge<T, V> {
-        type VertexType = Vertex<T, OrientedEdge<T, V>>;
+        type VertexType = Vertex<T, V>;
 
         fn end(&self) -> Option<Rc<Self::VertexType>> {
             self.end.upgrade()
