@@ -53,6 +53,63 @@ pub mod graph {
                 edges: Vec::new(),
             }
         }
+
+
+    }
+
+    impl<T: Debug, V: Debug> OrientedGraph<T, V> {
+        fn remove_edge(
+            &mut self,
+            edge: &Rc<RefCell<OrientedEdge<T, V>>>,
+        ) {
+            // Удалить ребро из списка ребер графа
+            self.edges.retain(|e| !Rc::ptr_eq(e, edge));
+
+            // Удалить ребро из списка ребер вершин
+            if let Some(start) = edge.borrow().start() {
+                start.borrow_mut().get_edges().retain(|e| !Rc::ptr_eq(&e, edge));
+            }
+
+            if let Some(end) = edge.borrow().end() {
+                end.borrow_mut().get_edges().retain(|e| !Rc::ptr_eq(&e, edge));
+            }
+        }
+
+        fn remove_edge_by_vertices(
+            &mut self,
+            start_vertex_id: usize,
+            end_vertex_id: usize,
+        ) {
+            // Найти вершины по их идентификаторам
+            let start_vertex = self
+                .vertexes
+                .iter()
+                .find(|vertex| vertex.borrow().id() == start_vertex_id);
+
+            let end_vertex = self
+                .vertexes
+                .iter()
+                .find(|vertex| vertex.borrow().id() == end_vertex_id);
+
+            if let (Some(start), Some(end)) = (start_vertex, end_vertex) {
+                // Найти ребро по начальной и конечной вершине
+                let edge_index = start
+                    .borrow()
+                    .get_edges()
+                    .iter()
+                    .position(|edge| edge.borrow().end().unwrap() == Some(Rc::downgrade(end)));
+
+                if let Some(index) = edge_index {
+                    let edge = start.borrow_mut().edges.remove(index);
+
+                    // Удалить ребро из списка ребер графа
+                    graph.edges.retain(|e| !Rc::ptr_eq(&e, &edge));
+
+                    // Удалить ребро из списка ребер конечной вершины
+                    end.borrow_mut().edges.retain(|e| !Rc::ptr_eq(&e, &edge));
+                }
+            }
+        }
     }
 
     impl<T: Debug, V: Debug> DefaultGraph<T, V> for OrientedGraph<T, V> {
@@ -120,23 +177,24 @@ pub mod graph {
         }
 
         fn remove_vertex(&mut self, vertex: Rc<RefCell<Self::VertexType>>) -> Result<(), GraphError> {
-            let vertex = vertex.borrow();
-            self.vertexes.retain(|v| v.borrow().id() != vertex.id());
-            for edge in vertex.get_edges() {
-
-                if edge.borrow().start_id() != Some(vertex.id()) {
-                    if let Some(start) = edge.borrow().start() {
-                        start.borrow_mut().remove_neighbor_by_position(vertex.id())?;
-                    }
-                }
-
-                if edge.borrow().end_id() != Some(vertex.id()) {
-                    if let Some(end) = edge.borrow().end() {
-                        end.borrow_mut().remove_neighbor_by_position(vertex.id())?;
-                    }
-                }
-            }
-            Ok(())
+            // let vertex = vertex.borrow();
+            // self.vertexes.retain(|v| v.borrow().id() != vertex.id());
+            // for edge in vertex.get_edges() {
+            //
+            //     if edge.borrow().start() != Some(self) && edge.borrow().start_id() != Some(vertex.id()) {
+            //         if let Some(start) = edge.borrow().start() {
+            //             start.borrow_mut().remove_neighbor_by_position(vertex.id())?;
+            //         }
+            //     }
+            //
+            //     if edge.borrow().end_id() != Some(vertex.id()) {
+            //         if let Some(end) = edge.borrow().end() {
+            //             end.borrow_mut().remove_neighbor_by_position(vertex.id())?;
+            //         }
+            //     }
+            // }
+            // Ok(())
+            todo!()
         }
 
         fn remove_vertex_by_id(&mut self, id: usize) -> Result<(), GraphError> {
