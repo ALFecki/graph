@@ -42,6 +42,10 @@ pub enum GraphError {
     EdgeRemovingError,
     #[error("Removing vertex failed")]
     VertexRemovingError,
+    #[error("Edge already exists")]
+    EdgeExistsError,
+    #[error("Vertex already exists")]
+    VertexExistsError,
 }
 
 #[derive(Error, Debug)]
