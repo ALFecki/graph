@@ -17,10 +17,20 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     file.read_to_string(&mut serialized_graph)?;
 
-    let graph = OrientedGraph::<String, String>::deserialize(serialized_graph.as_str()).unwrap();
-
-    let dfs_result = graph.depth_first_search(1).unwrap();
-    println!("{}", dfs_result);
-
-    Ok(())
+    return match OrientedGraph::<String, String>::deserialize(serialized_graph.as_str()) {
+        Ok(graph) => {
+            return match graph.depth_first_search(1) {
+                Ok(dfs_result) => {
+                    println!("{}", dfs_result);
+                    Ok(())
+                }
+                Err(e) => {
+                    Err(Box::new(e))
+                }
+            }
+        }
+        Err(e) => {
+            Err(Box::new(e))
+        }
+    }
 }
