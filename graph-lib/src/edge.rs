@@ -51,9 +51,9 @@ pub mod edge {
             }
         }
 
-        pub(crate) fn new_with_value(value: V) -> Self {
+        pub(crate) fn new_with_value(value: Option<V>) -> Self {
             Self {
-                value: Some(value),
+                value,
                 ..Self::default()
             }
         }

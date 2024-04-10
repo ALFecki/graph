@@ -31,7 +31,7 @@ pub mod graph {
             &mut self,
             start: usize,
             end: usize,
-            value: V,
+            value: Option<V>,
         ) -> Result<(), GraphError>;
 
         fn remove_edge(&mut self, edge: &Rc<RefCell<Self::EdgeType>>) -> Result<(), GraphError>;
@@ -62,7 +62,7 @@ pub mod graph {
         }
     }
 
-    impl<T: Debug, V: Debug> DefaultGraph<T, V> for OrientedGraph<T, V> {
+    impl<T: Debug, V: Debug + Clone> DefaultGraph<T, V> for OrientedGraph<T, V> {
         type VertexType = Vertex<T, V>;
         type EdgeType = OrientedEdge<T, V>;
 
@@ -106,7 +106,7 @@ pub mod graph {
                     return Err(GraphError::EdgeExistsError);
                 }
             }
-            self.edges.push(Rc::new(RefCell::new(edge)));
+            self.add_edge_with_vertex_id(edge.start_id().unwrap(), edge.end_id().unwrap(), edge.value().cloned())?;
             Ok(())
         }
 
@@ -114,7 +114,7 @@ pub mod graph {
             &mut self,
             start: usize,
             end: usize,
-            value: V,
+            value: Option<V>,
         ) -> Result<(), GraphError> {
             if self.get_edge_by_vertexes_id(start, end).is_some() {
                 return Err(GraphError::EdgeExistsError);
@@ -242,7 +242,7 @@ pub mod graph {
             let mut res = String::new();
             for vertex in self.0.clone() {
                 let borrow = vertex.borrow();
-                let adjacent: Vec<usize> = borrow
+                let mut adjacent: Vec<usize> = borrow
                     .get_edges()
                     .iter()
                     .filter_map(|p| {
@@ -254,6 +254,7 @@ pub mod graph {
                         }
                     })
                     .collect();
+                adjacent.dedup_by(|l, r| l == r);
                 res.push_str(
                     format!(
                         "{} {} {:?}\n",
