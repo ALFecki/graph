@@ -38,6 +38,10 @@ pub enum GraphError {
     VertexNotFound,
     #[error("Edge is not found")]
     EdgeNotFound,
+    #[error("Removing edge failed")]
+    EdgeRemovingError,
+    #[error("Removing vertex failed")]
+    VertexRemovingError,
 }
 
 #[derive(Error, Debug)]

@@ -18,11 +18,8 @@ pub mod graph {
         fn vertex_count(&self) -> usize;
         fn edges_count(&self) -> usize;
         fn get_vertexes(&self) -> Vec<Rc<RefCell<Self::VertexType>>>;
-
         fn get_edges(&self) -> Vec<Rc<RefCell<Self::EdgeType>>>;
-
         fn get_vertex_by_id(&mut self, id: usize) -> Option<Rc<RefCell<Self::VertexType>>>;
-
         fn add_edge(&mut self, edge: Self::EdgeType);
         fn add_edge_with_vertex_id(
             &mut self,
@@ -31,12 +28,17 @@ pub mod graph {
             value: V,
         ) -> Result<(), GraphError>;
 
+        fn remove_edge(&mut self, edge: &Rc<RefCell<Self::EdgeType>>) -> Result<(), GraphError>;
+
+        fn remove_edge_by_vertexes(
+            &mut self,
+            start_vertex_id: usize,
+            end_vertex_id: usize,
+        ) -> Result<(), GraphError>;
+
         fn add_vertex(&mut self, vertex: Self::VertexType);
         fn add_raw_vertex(&mut self, id: usize, value: T);
-
-        fn remove_vertex(&mut self, vertex: Rc<RefCell<Self::VertexType>>) -> Result<(), GraphError>;
         fn remove_vertex_by_id(&mut self, id: usize) -> Result<(), GraphError>;
-
         fn remove_edge_by_vertex_id(&mut self, start: usize, end: usize) -> Result<(), GraphError>;
     }
 
@@ -52,52 +54,6 @@ pub mod graph {
                 vertexes: Vec::new(),
                 edges: Vec::new(),
             }
-        }
-
-
-    }
-
-    impl<T: Debug, V: Debug> OrientedGraph<T, V> {
-        fn remove_edge(
-            &mut self,
-            edge: &Rc<RefCell<OrientedEdge<T, V>>>,
-        ) {
-            // Удалить ребро из списка ребер графа
-            self.edges.retain(|e| !Rc::ptr_eq(e, edge));
-
-            // Удалить ребро из списка ребер вершин
-            if let Some(start) = edge.borrow().start() {
-                start.borrow_mut().get_edges().retain(|e| !Rc::ptr_eq(&e, edge));
-            }
-
-            if let Some(end) = edge.borrow().end() {
-                end.borrow_mut().get_edges().retain(|e| !Rc::ptr_eq(&e, edge));
-            }
-        }
-
-        pub fn remove_edge_by_vertices(
-            &mut self,
-            start_vertex_id: usize,
-            end_vertex_id: usize,
-        ) -> Result<(), GraphError> {
-            if let (Some(start), Some(end)) = (self.get_vertex_by_id(start_vertex_id), self.get_vertex_by_id(end_vertex_id)) {
-                
-                let edge_index = start
-                    .borrow()
-                    .get_edges()
-                    .iter()
-                    .position(|edge| edge.borrow().end().unwrap().borrow().id() == end.borrow().id());
-                
-                if let Some(index) = edge_index {
-                    let edge = start.borrow_mut().get_edges().remove(index);
-                    
-                    self.edges.retain(|e| !Rc::ptr_eq(&e, &edge));
-                    end.borrow_mut().get_edges().retain(|e| !Rc::ptr_eq(&e, &edge));
-                    
-                return Ok(());
-                }
-            }
-            Err(GraphError::EdgeNotFound)
         }
     }
 
@@ -122,7 +78,10 @@ pub mod graph {
         }
 
         fn get_vertex_by_id(&mut self, id: usize) -> Option<Rc<RefCell<Self::VertexType>>> {
-            self.vertexes.iter().find(|&p| p.borrow().id() == id).cloned()
+            self.vertexes
+                .iter()
+                .find(|&p| p.borrow().id() == id)
+                .cloned()
         }
 
         fn add_edge(&mut self, edge: Self::EdgeType) {
@@ -151,39 +110,58 @@ pub mod graph {
             Ok(())
         }
 
+        fn remove_edge(
+            &mut self,
+            edge: &Rc<RefCell<OrientedEdge<T, V>>>,
+        ) -> Result<(), GraphError> {
+            self.edges.retain(|e| !Rc::ptr_eq(e, edge));
+
+            if let (Some(start), Some(end)) = (edge.borrow().start(), edge.borrow().end()) {
+                start
+                    .borrow_mut()
+                    .get_edges()
+                    .retain(|e| !Rc::ptr_eq(&e, edge));
+                end.borrow_mut()
+                    .get_edges()
+                    .retain(|e| !Rc::ptr_eq(&e, edge));
+                return Ok(());
+            }
+            Err(GraphError::EdgeRemovingError)
+        }
+        fn remove_edge_by_vertexes(
+            &mut self,
+            start_vertex_id: usize,
+            end_vertex_id: usize,
+        ) -> Result<(), GraphError> {
+            if let (Some(start), Some(end)) = (
+                self.get_vertex_by_id(start_vertex_id),
+                self.get_vertex_by_id(end_vertex_id),
+            ) {
+                let edge_index = start.borrow().get_edges().iter().position(|edge| {
+                    edge.borrow().end().unwrap().borrow().id() == end.borrow().id()
+                });
+
+                if let Some(index) = edge_index {
+                    let edge = start.borrow_mut().get_edges().remove(index);
+
+                    self.edges.retain(|e| !Rc::ptr_eq(&e, &edge));
+                    end.borrow_mut()
+                        .get_edges()
+                        .retain(|e| !Rc::ptr_eq(&e, &edge));
+
+                    return Ok(());
+                }
+            }
+            Err(GraphError::EdgeNotFound)
+        }
+
         fn add_vertex(&mut self, vertex: Self::VertexType) {
             self.vertexes.push(Rc::new(RefCell::new(vertex)));
         }
+
         fn add_raw_vertex(&mut self, id: usize, value: T) {
             self.vertexes
                 .push(Rc::new(RefCell::new(Vertex::<T, V>::new(id, value))))
-        }
-
-        fn remove_edge_by_vertex_id(&mut self, start: usize, end: usize) -> Result<(), GraphError> {
-            let vertex = self.get_vertex_by_id(start).ok_or(GraphError::VertexNotFound)?;
-            vertex.borrow_mut().remove_neighbor_by_position(end)?;
-            Ok(())
-        }
-
-        fn remove_vertex(&mut self, vertex: Rc<RefCell<Self::VertexType>>) -> Result<(), GraphError> {
-            // let vertex = vertex.borrow();
-            // self.vertexes.retain(|v| v.borrow().id() != vertex.id());
-            // for edge in vertex.get_edges() {
-            //
-            //     if edge.borrow().start() != Some(self) && edge.borrow().start_id() != Some(vertex.id()) {
-            //         if let Some(start) = edge.borrow().start() {
-            //             start.borrow_mut().remove_neighbor_by_position(vertex.id())?;
-            //         }
-            //     }
-            //
-            //     if edge.borrow().end_id() != Some(vertex.id()) {
-            //         if let Some(end) = edge.borrow().end() {
-            //             end.borrow_mut().remove_neighbor_by_position(vertex.id())?;
-            //         }
-            //     }
-            // }
-            // Ok(())
-            todo!()
         }
 
         fn remove_vertex_by_id(&mut self, id: usize) -> Result<(), GraphError> {
@@ -193,33 +171,40 @@ pub mod graph {
                 .position(|vertex| vertex.borrow().id() == id);
 
             if let Some(index) = vertex_index {
-                // Remove the vertex from the graph
                 let removed_vertex = self.vertexes.remove(index);
 
-                // Remove all edges connected to the removed vertex
                 self.edges.retain(|edge| {
                     let start_ptr = &edge.borrow().start();
                     let end_ptr = &edge.borrow().end();
 
                     start_ptr.clone().unwrap().borrow().id() != removed_vertex.clone().borrow().id()
-                        && end_ptr.clone().unwrap().borrow().id() != removed_vertex.clone().borrow().id()
+                        && end_ptr.clone().unwrap().borrow().id()
+                            != removed_vertex.clone().borrow().id()
                 });
 
-                // Remove references to the removed vertex from other vertices
                 for vertex in &self.vertexes {
                     let edges = &mut vertex.borrow_mut().get_edges();
                     edges.retain(|edge| {
                         let start_ptr = &edge.borrow().start();
                         let end_ptr = &edge.borrow().end();
 
-                        start_ptr.clone().unwrap().borrow().id() != removed_vertex.clone().borrow().id()
-                            && end_ptr.clone().unwrap().borrow().id() != removed_vertex.clone().borrow().id()
+                        start_ptr.clone().unwrap().borrow().id()
+                            != removed_vertex.clone().borrow().id()
+                            && end_ptr.clone().unwrap().borrow().id()
+                                != removed_vertex.clone().borrow().id()
                     });
                 }
                 return Ok(());
             }
             Err(GraphError::VertexNotFound)
         }
+
+        fn remove_edge_by_vertex_id(&mut self, start: usize, end: usize) -> Result<(), GraphError> {
+            let vertex = self
+                .get_vertex_by_id(start)
+                .ok_or(GraphError::VertexNotFound)?;
+            vertex.borrow_mut().remove_neighbor_by_position(end)?;
+            Ok(())
+        }
     }
-        
 }
