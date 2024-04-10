@@ -1,5 +1,6 @@
 pub mod graph {
     use std::cell::{Ref, RefCell, RefMut};
+    use std::collections::{HashMap, HashSet};
     use std::fmt::{format, Debug};
     use std::ops::Deref;
     use std::rc::Rc;
@@ -39,13 +40,43 @@ pub mod graph {
         fn add_vertex(&mut self, vertex: Self::VertexType);
         fn add_raw_vertex(&mut self, id: usize, value: T);
         fn remove_vertex_by_id(&mut self, id: usize) -> Result<(), GraphError>;
-        fn remove_edge_by_vertex_id(&mut self, start: usize, end: usize) -> Result<(), GraphError>;
     }
 
     #[derive(Debug)]
     pub struct OrientedGraph<T: Debug, V: Debug> {
         vertexes: Vec<Rc<RefCell<Vertex<T, V>>>>,
         edges: Vec<Rc<RefCell<OrientedEdge<T, V>>>>,
+    }
+    
+    impl<T: Debug, V: Debug> OrientedGraph<T, V> {
+        pub fn depth_first_search(&self, start_vertex_id: usize) {
+            let start_vertex = self
+                .vertexes
+                .iter()
+                .find(|vertex| vertex.borrow().id() == start_vertex_id);
+
+            if let Some(vertex) = start_vertex {
+                let mut visited: HashMap<usize, bool> = HashMap::new();
+                self.dfs_helper(vertex, &mut visited);
+            } else {
+                println!("Start vertex not found.");
+            }
+        }
+
+        fn dfs_helper(&self, vertex: &Rc<RefCell<Vertex<T, V>>>, visited:  &mut HashMap<usize, bool>) {
+            visited.insert(vertex.borrow().id(), true);
+            println!("Visited vertex: {:?}", vertex.borrow().value());
+
+            for edge in &vertex.borrow().get_edges() {
+                let neighbor = edge.borrow().end();
+                if let Some(neighbor) = neighbor {
+                    let neighbor_id = neighbor.borrow().id();
+                    if visited.get(&neighbor_id).is_none() {
+                        self.dfs_helper(&neighbor, visited);
+                    }
+                }
+            }
+        }
     }
 
     impl<T: Debug, V: Debug> Default for OrientedGraph<T, V> {
@@ -197,14 +228,6 @@ pub mod graph {
                 return Ok(());
             }
             Err(GraphError::VertexNotFound)
-        }
-
-        fn remove_edge_by_vertex_id(&mut self, start: usize, end: usize) -> Result<(), GraphError> {
-            let vertex = self
-                .get_vertex_by_id(start)
-                .ok_or(GraphError::VertexNotFound)?;
-            vertex.borrow_mut().remove_neighbor_by_position(end)?;
-            Ok(())
         }
     }
 }

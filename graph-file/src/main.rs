@@ -1,4 +1,4 @@
-use graph_lib::graph::graph::{DefaultGraph, OrientedGraph};
+use graph_lib::graph::graph::{ DefaultGraph, OrientedGraph};
 use graph_lib::serde::serde_graph::{DeserializeGraph, SerializeGraph};
 
 fn main() {
@@ -14,7 +14,9 @@ fn main() {
     graph.add_raw_vertex(3, "Test".to_string());
     graph.add_edge_with_vertex_id(1, 2, "Edge 1-2".to_string()).unwrap();
     graph.add_edge_with_vertex_id(2, 3, "Edge 2-3".to_string()).unwrap();
-    graph.remove_edge_by_vertices(2, 3);
+    graph.add_edge_with_vertex_id(1, 3, "Edge 1-3".to_string()).unwrap();
+    graph.depth_first_search(1);
+    graph.remove_vertex_by_id(2);
     
     let ser_graph = graph.serialize().unwrap();
     println!("{}", ser_graph)
