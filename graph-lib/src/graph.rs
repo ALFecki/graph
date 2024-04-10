@@ -187,8 +187,38 @@ pub mod graph {
         }
 
         fn remove_vertex_by_id(&mut self, id: usize) -> Result<(), GraphError> {
-            let vertex = self.get_vertex_by_id(id).ok_or(GraphError::VertexNotFound)?;
-            self.remove_vertex(vertex)
+            let vertex_index = self
+                .vertexes
+                .iter()
+                .position(|vertex| vertex.borrow().id() == id);
+
+            if let Some(index) = vertex_index {
+                // Remove the vertex from the graph
+                let removed_vertex = self.vertexes.remove(index);
+
+                // Remove all edges connected to the removed vertex
+                self.edges.retain(|edge| {
+                    let start_ptr = &edge.borrow().start();
+                    let end_ptr = &edge.borrow().end();
+
+                    start_ptr.clone().unwrap().borrow().id() != removed_vertex.clone().borrow().id()
+                        && end_ptr.clone().unwrap().borrow().id() != removed_vertex.clone().borrow().id()
+                });
+
+                // Remove references to the removed vertex from other vertices
+                for vertex in &self.vertexes {
+                    let edges = &mut vertex.borrow_mut().get_edges();
+                    edges.retain(|edge| {
+                        let start_ptr = &edge.borrow().start();
+                        let end_ptr = &edge.borrow().end();
+
+                        start_ptr.clone().unwrap().borrow().id() != removed_vertex.clone().borrow().id()
+                            && end_ptr.clone().unwrap().borrow().id() != removed_vertex.clone().borrow().id()
+                    });
+                }
+                return Ok(());
+            }
+            Err(GraphError::VertexNotFound)
         }
     }
         
