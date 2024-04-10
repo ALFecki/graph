@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod tests {
-    use super::*;
     use graph_lib::graph::graph::{DefaultGraph, OrientedGraph};
     use graph_lib::serde::serde_graph::{DeserializeGraph, SerializeGraph};
 

@@ -1,16 +1,11 @@
 pub mod graph {
-    use std::cell::{Ref, RefCell, RefMut};
-    use std::collections::{HashMap, HashSet};
-    use std::fmt::{format, Debug, Display};
-    use std::ops::Deref;
+    use std::cell::RefCell;
+    use std::collections::HashMap;
+    use std::fmt::{Debug, Display};
     use std::rc::Rc;
-    use std::str::FromStr;
 
     use crate::edge::edge::{DefaultEdge, DefaultOrientedEdge, OrientedEdge};
-    use crate::error::{
-        EdgeParseError, GraphError, GraphParseError, SerializationError, VertexParseError,
-    };
-    use crate::serde::serde_graph::{DeserializeGraph, SerializeGraph};
+    use crate::error::GraphError;
     use crate::vertex::vertex::{DefaultVertex, Vertex};
 
     pub trait DefaultGraph<T, V> {

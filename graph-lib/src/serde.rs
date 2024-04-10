@@ -1,12 +1,13 @@
 pub mod serde_graph {
-    use crate::edge::edge::{DefaultEdge, DefaultOrientedEdge, OrientedEdge};
-    use crate::error::{EdgeParseError, GraphParseError, SerializationError, VertexParseError};
-    use crate::graph::graph::{DefaultGraph, OrientedGraph};
-    use crate::vertex::vertex::{DefaultVertex, Vertex};
     use std::cell::{Ref, RefCell};
     use std::fmt::Debug;
     use std::rc::Rc;
     use std::str::FromStr;
+
+    use crate::edge::edge::{DefaultEdge, DefaultOrientedEdge, OrientedEdge};
+    use crate::error::{EdgeParseError, GraphParseError, SerializationError, VertexParseError};
+    use crate::graph::graph::{DefaultGraph, OrientedGraph};
+    use crate::vertex::vertex::{DefaultVertex, Vertex};
 
     pub trait SerializeGraph<T, V> {
         type VertexType: DefaultVertex<T, V>;

@@ -1,10 +1,9 @@
 pub mod edge {
-    use crate::graph::graph::DefaultGraph;
-    use crate::vertex::vertex::{DefaultVertex, Vertex};
     use std::cell::RefCell;
     use std::fmt::Debug;
-    use std::ptr::null;
     use std::rc::{Rc, Weak};
+    
+    use crate::vertex::vertex::{DefaultVertex, Vertex};
 
     pub trait DefaultEdge<T, V> {
         type VertexType: DefaultVertex<T, V>;

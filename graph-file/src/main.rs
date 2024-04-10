@@ -1,8 +1,9 @@
 use std::error::Error;
 use std::fs::File;
-use std::io::{Read, stdin, stdout, Write};
-use graph_lib::graph::graph::{DefaultGraph, OrientedGraph};
-use graph_lib::serde::serde_graph::{DeserializeGraph, SerializeGraph};
+use std::io::{Read, stdin};
+
+use graph_lib::graph::graph::OrientedGraph;
+use graph_lib::serde::serde_graph::DeserializeGraph;
 
 fn main() -> Result<(), Box<dyn Error>>{
     println!("Enter the filename: ");
