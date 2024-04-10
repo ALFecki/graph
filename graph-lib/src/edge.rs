@@ -2,7 +2,7 @@ pub mod edge {
     use std::cell::RefCell;
     use std::fmt::Debug;
     use std::rc::{Rc, Weak};
-    
+
     use crate::vertex::vertex::{DefaultVertex, Vertex};
 
     pub trait DefaultEdge<T, V> {

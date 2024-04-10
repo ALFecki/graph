@@ -1,16 +1,16 @@
 use std::error::Error;
 use std::fs::File;
-use std::io::{Read, stdin};
+use std::io::{stdin, Read};
 
 use graph_lib::graph::graph::OrientedGraph;
 use graph_lib::serde::serde_graph::DeserializeGraph;
 
-fn main() -> Result<(), Box<dyn Error>>{
+fn main() -> Result<(), Box<dyn Error>> {
     println!("Enter the filename: ");
     let mut filename = String::new();
 
     stdin().read_line(&mut filename)?;
-    
+
     let mut file = File::open(filename.trim_end())?;
 
     let mut serialized_graph = String::new();

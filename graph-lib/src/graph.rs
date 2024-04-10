@@ -101,7 +101,11 @@ pub mod graph {
                     return Err(GraphError::EdgeExistsError);
                 }
             }
-            self.add_edge_with_vertex_id(edge.start_id().unwrap(), edge.end_id().unwrap(), edge.value().cloned())?;
+            self.add_edge_with_vertex_id(
+                edge.start_id().unwrap(),
+                edge.end_id().unwrap(),
+                edge.value().cloned(),
+            )?;
             Ok(())
         }
 

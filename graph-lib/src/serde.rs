@@ -30,7 +30,9 @@ pub mod serde_graph {
         ) -> Result<Self::EdgeType, EdgeParseError>;
     }
 
-    impl<T: FromStr + Debug, V: FromStr + Debug + Clone> DeserializeGraph<T, V> for OrientedGraph<T, V> {
+    impl<T: FromStr + Debug, V: FromStr + Debug + Clone> DeserializeGraph<T, V>
+        for OrientedGraph<T, V>
+    {
         type VertexType = Vertex<T, V>;
         type EdgeType = OrientedEdge<T, V>;
         type GraphType = OrientedGraph<T, V>;
@@ -44,15 +46,19 @@ pub mod serde_graph {
                     continue;
                 }
                 if deser_edges {
-                    graph_obj.add_edge(
-                        Self::deserialize_edge(line, graph_obj.get_vertexes())
-                            .map_err(|_| GraphParseError::EdgeParsingError)?,
-                    ).map_err(|_| GraphParseError::EdgeParsingError)?;
+                    graph_obj
+                        .add_edge(
+                            Self::deserialize_edge(line, graph_obj.get_vertexes())
+                                .map_err(|_| GraphParseError::EdgeParsingError)?,
+                        )
+                        .map_err(|_| GraphParseError::EdgeParsingError)?;
                 } else {
-                    graph_obj.add_vertex(
-                        Self::deserialize_vertex(line)
-                            .map_err(|_| GraphParseError::VertexParsingError)?,
-                    ).map_err(|_| GraphParseError::VertexParsingError)?;
+                    graph_obj
+                        .add_vertex(
+                            Self::deserialize_vertex(line)
+                                .map_err(|_| GraphParseError::VertexParsingError)?,
+                        )
+                        .map_err(|_| GraphParseError::VertexParsingError)?;
                 }
             }
             Ok(graph_obj)
@@ -109,7 +115,9 @@ pub mod serde_graph {
         }
     }
 
-    impl<T: Debug + ToString, V: Debug + ToString + Clone> SerializeGraph<T, V> for OrientedGraph<T, V> {
+    impl<T: Debug + ToString, V: Debug + ToString + Clone> SerializeGraph<T, V>
+        for OrientedGraph<T, V>
+    {
         type VertexType = Vertex<T, V>;
         type EdgeType = OrientedEdge<T, V>;
         type GraphType = OrientedGraph<T, V>;

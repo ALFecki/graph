@@ -45,7 +45,7 @@ mod tests {
         let mut res = OrientedGraph::<String, String>::deserialize(GRAPH_STR).unwrap();
         assert!(res.add_raw_vertex(4, "Test".to_string()).is_ok());
         assert!(res.add_raw_vertex(5, "Test1".to_string()).is_ok());
-        
+
         assert_eq!(res.vertex_count(), 4);
     }
 
@@ -53,9 +53,12 @@ mod tests {
     fn add_edge_with_vertex_id() {
         let mut res = OrientedGraph::<String, String>::deserialize(GRAPH_STR).unwrap();
         assert!(res.add_raw_vertex(3, "Test".to_string()).is_ok());
-        assert!(res.add_edge_with_vertex_id(3, 2, Some("Edge 3-2".to_string()))
+        assert!(res
+            .add_edge_with_vertex_id(3, 2, Some("Edge 3-2".to_string()))
             .is_ok());
-        assert!(res.add_edge_with_vertex_id(2, 3, Some("Edge 2-3".to_string())).is_ok());
+        assert!(res
+            .add_edge_with_vertex_id(2, 3, Some("Edge 2-3".to_string()))
+            .is_ok());
         assert_eq!(res.edges_count(), 3);
     }
 
@@ -63,15 +66,18 @@ mod tests {
     fn remove_edge() {
         let mut res = OrientedGraph::<String, String>::deserialize(GRAPH_STR).unwrap();
         assert!(res.add_raw_vertex(3, "Test".to_string()).is_ok());
-        assert!(res.add_edge_with_vertex_id(3, 2, Some("Edge 3-2".to_string()))
+        assert!(res
+            .add_edge_with_vertex_id(3, 2, Some("Edge 3-2".to_string()))
             .is_ok());
-        assert!(res.add_edge_with_vertex_id(2, 3, Some("Edge 2-3".to_string())).is_ok());
+        assert!(res
+            .add_edge_with_vertex_id(2, 3, Some("Edge 2-3".to_string()))
+            .is_ok());
 
         assert_eq!(res.edges_count(), 3);
         assert!(res.remove_edge_by_vertexes(2, 3).is_ok());
         assert_eq!(res.edges_count(), 2);
     }
-    
+
     #[test]
     fn remove_vertex() {
         let mut res = OrientedGraph::<String, String>::deserialize(GRAPH_STR).unwrap();
@@ -81,19 +87,16 @@ mod tests {
         assert!(res.remove_vertex_by_id(3).is_ok());
         assert_eq!(res.vertex_count(), 2);
     }
-    
+
     #[test]
     fn dfs_test() {
         let res = OrientedGraph::<String, String>::deserialize(GRAPH_STR).unwrap();
-        let dfs_expect = concat!(
-        "1 First vertex [2]\n",
-        "2 Second vertex [1]\n",
-        );
+        let dfs_expect = concat!("1 First vertex [2]\n", "2 Second vertex [1]\n",);
         let dfs_res = res.depth_first_search(1);
         assert!(dfs_res.is_ok());
         assert_eq!(dfs_expect, dfs_res.unwrap().to_string())
     }
-    
+
     #[test]
     fn ser_test() {
         let res = OrientedGraph::<String, String>::deserialize(GRAPH_STR).unwrap();
