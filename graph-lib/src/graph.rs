@@ -162,7 +162,10 @@ pub mod graph {
                 self.get_vertex_by_id(end_vertex_id),
             ) {
                 let edge_index = start.borrow().get_edges().iter().position(|edge| {
-                    edge.borrow().end().unwrap().borrow().id() == end.borrow().id()
+                    if let Some(end_ref) = edge.borrow().end() {
+                        return end_ref.borrow().id() == end.borrow().id();    
+                    }
+                    false
                 });
 
                 if let Some(index) = edge_index {

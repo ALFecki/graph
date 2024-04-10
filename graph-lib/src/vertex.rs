@@ -30,15 +30,6 @@ pub mod vertex {
                 edges: Vec::default(),
             }
         }
-
-        pub fn remove_edges_for_vertex(&mut self, vertex_id: usize) {
-            self.edges.retain(|edge| {
-                let edge_ref = edge.borrow();
-                let start_id = edge_ref.start_id();
-                let end_id = edge_ref.end_id();
-                start_id != Some(vertex_id) && end_id != Some(vertex_id)
-            });
-        }
     }
 
     impl<T: Debug, V: Debug> DefaultVertex<T, V> for Vertex<T, V> {
