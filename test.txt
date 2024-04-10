@@ -1,0 +1,6 @@
+1 First vertex
+2 Second vertex
+3 Third vertex
+#
+1 2 Edge 1-2
+1 3 Edge 1-3
