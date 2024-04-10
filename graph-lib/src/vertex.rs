@@ -3,7 +3,7 @@ pub mod vertex {
     use std::fmt::Debug;
     use std::rc::Rc;
 
-    use crate::edge::edge::{DefaultEdge, DefaultOrientedEdge, OrientedEdge};
+    use crate::edge::edge::{DefaultEdge, OrientedEdge};
 
     pub trait DefaultVertex<T, V> {
         type EdgeType: DefaultEdge<T, V>;
