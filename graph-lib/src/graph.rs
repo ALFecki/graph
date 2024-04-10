@@ -34,7 +34,7 @@ pub mod graph {
         fn add_vertex(&mut self, vertex: Self::VertexType);
         fn add_raw_vertex(&mut self, id: usize, value: T);
 
-        fn remove_vertex(&mut self, vertex: Self::VertexType) -> Result<(), GraphError>;
+        fn remove_vertex(&mut self, vertex: Rc<RefCell<Self::VertexType>>) -> Result<(), GraphError>;
         fn remove_vertex_by_id(&mut self, id: usize) -> Result<(), GraphError>;
 
         fn remove_edge_by_vertex_id(&mut self, start: usize, end: usize) -> Result<(), GraphError>;
@@ -119,9 +119,9 @@ pub mod graph {
             Ok(())
         }
 
-        fn remove_vertex(&mut self, vertex: Self::VertexType) -> Result<(), GraphError> {
+        fn remove_vertex(&mut self, vertex: Rc<RefCell<Self::VertexType>>) -> Result<(), GraphError> {
+            let vertex = vertex.borrow();
             self.vertexes.retain(|v| v.borrow().id() != vertex.id());
-
             for edge in vertex.get_edges() {
 
                 if edge.borrow().start_id() != Some(vertex.id()) {
@@ -141,7 +141,7 @@ pub mod graph {
 
         fn remove_vertex_by_id(&mut self, id: usize) -> Result<(), GraphError> {
             let vertex = self.get_vertex_by_id(id).ok_or(GraphError::VertexNotFound)?;
-            todo!()
+            self.remove_vertex(vertex)
         }
     }
 }

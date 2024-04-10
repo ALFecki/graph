@@ -90,7 +90,6 @@ pub mod edge {
 
         fn start_id(&self) -> Option<usize> {
             self.start.upgrade().map(|val| val.borrow().id())
-
         }
 
         fn set_start(&mut self, vertex: &Rc<RefCell<Self::VertexType>>) {

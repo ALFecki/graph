@@ -11,7 +11,7 @@ pub mod vertex {
 
         fn get_edges(&self) -> Vec<Rc<RefCell<Self::EdgeType>>>;
         fn add_neighbor(&mut self, new_neighbor: Rc<RefCell<Self::EdgeType>>);
-        fn find_neighbor(&self, vertex_id: usize);
+        fn find_neighbor(&self, vertex_id: Self);
 
         fn remove_neighbor(&self, vertex: impl DefaultVertex<T, V>) -> Result<(), ()>;
         fn remove_neighbor_by_position(&mut self, remove_id: usize) -> Result<(), GraphError>;
@@ -35,6 +35,15 @@ pub mod vertex {
                 edges: Vec::default(),
             }
         }
+
+        pub fn remove_edges_for_vertex(&mut self, vertex_id: usize) {
+            self.edges.retain(|edge| {
+                let edge_ref = edge.borrow();
+                let start_id = edge_ref.start_id();
+                let end_id = edge_ref.end_id();
+                start_id != Some(vertex_id) && end_id != Some(vertex_id)
+            });
+        }
     }
 
     impl<T: Debug, V: Debug> DefaultVertex<T, V> for Vertex<T, V> {
@@ -48,7 +57,7 @@ pub mod vertex {
             self.edges.push(new_neighbor)
         }
 
-        fn find_neighbor(&self, vertex_id: usize) {
+        fn find_neighbor(&self, vertex: Self) {
             // self.edges.iter().find(|&&p| if let Some(end) = p.end() {end.get_id() == vertex_id} else {})
         }
 
