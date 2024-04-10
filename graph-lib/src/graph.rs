@@ -67,19 +67,25 @@ pub mod graph {
                         }
                     })
                     .collect();
-                res.push_str(format!(
-                    "{} {} {:?}\n",
-                    borrow.id(),
-                    borrow.value().to_string(),
-                    adjacent
-                ).as_str());
+                res.push_str(
+                    format!(
+                        "{} {} {:?}\n",
+                        borrow.id(),
+                        borrow.value().to_string(),
+                        adjacent
+                    )
+                    .as_str(),
+                );
             }
             res
         }
     }
 
     impl<T: Debug, V: Debug> OrientedGraph<T, V> {
-        pub fn depth_first_search(&self, start_vertex_id: usize) -> Result<DFSResult<T, V>, GraphError> {
+        pub fn depth_first_search(
+            &self,
+            start_vertex_id: usize,
+        ) -> Result<DFSResult<T, V>, GraphError> {
             let mut result = Vec::new();
             let start_vertex = self
                 .vertexes
@@ -90,7 +96,7 @@ pub mod graph {
                 let mut visited: HashMap<usize, bool> = HashMap::new();
                 result.push(vertex.clone());
                 self.dfs_helper(vertex, &mut visited, &mut result);
-                return Ok(DFSResult::<T, V>{ 0: result });
+                return Ok(DFSResult::<T, V> { 0: result });
             }
             Err(GraphError::VertexNotFound)
         }

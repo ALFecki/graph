@@ -29,7 +29,6 @@ pub mod serde_graph {
         ) -> Result<Self::EdgeType, EdgeParseError>;
     }
 
-
     impl<T: FromStr + Debug, V: FromStr + Debug> DeserializeGraph<T, V> for OrientedGraph<T, V> {
         type VertexType = Vertex<T, V>;
         type EdgeType = OrientedEdge<T, V>;
@@ -124,15 +123,13 @@ pub mod serde_graph {
                 match Self::serialize_edge(edge.borrow()) {
                     Ok(edge) => {
                         result.push_str(format!("\n{}", edge).as_str());
-                    },
+                    }
                     Err(e) => {
                         return Err(e);
                     }
                 }
-
             }
             Ok(result)
-
         }
 
         fn serialize_vertex(vertex: Ref<Self::VertexType>) -> String {
