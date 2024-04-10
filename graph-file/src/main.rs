@@ -15,8 +15,8 @@ fn main() {
     graph.add_edge_with_vertex_id(1, 2, "Edge 1-2".to_string()).unwrap();
     graph.add_edge_with_vertex_id(2, 3, "Edge 2-3".to_string()).unwrap();
     graph.add_edge_with_vertex_id(1, 3, "Edge 1-3".to_string()).unwrap();
-    let result = graph.depth_first_search(1);
-    println!("{:?}", result);
+    let result = graph.depth_first_search(1).unwrap();
+    println!("{}", result.to_string());
     graph.remove_vertex_by_id(2);
     
     let ser_graph = graph.serialize().unwrap();

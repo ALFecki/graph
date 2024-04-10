@@ -53,24 +53,25 @@ pub mod graph {
     impl<T: Debug + ToString, V: Debug + ToString> ToString for DFSResult<T, V> {
         fn to_string(&self) -> String {
             let mut res = String::new();
-            for vertex in self.0 {
+            for vertex in self.0.clone() {
                 let borrow = vertex.borrow();
+                let adjacent: Vec<usize> = borrow
+                    .get_edges()
+                    .iter()
+                    .filter_map(|p| {
+                        let edge_borrow = p.borrow();
+                        if edge_borrow.start_id() != Some(borrow.id()) {
+                            edge_borrow.start_id()
+                        } else {
+                            edge_borrow.end_id()
+                        }
+                    })
+                    .collect();
                 res.push_str(format!(
-                    "{} {} {}",
+                    "{} {} {:?}\n",
                     borrow.id(),
                     borrow.value().to_string(),
-                    borrow
-                        .get_edges()
-                        .iter()
-                        .filter_map(|p| {
-                            let edge_borrow = p.borrow();
-                            if edge_borrow.start_id() != Some(borrow.id()) {
-                                edge_borrow.start_id()
-                            } else {
-                                edge_borrow.end_id()
-                            }
-                        })
-                        .collect()
+                    adjacent
                 ).as_str());
             }
             res
@@ -78,7 +79,7 @@ pub mod graph {
     }
 
     impl<T: Debug, V: Debug> OrientedGraph<T, V> {
-        pub fn depth_first_search(&self, start_vertex_id: usize) -> DFSResult<T, V> {
+        pub fn depth_first_search(&self, start_vertex_id: usize) -> Result<DFSResult<T, V>, GraphError> {
             let mut result = Vec::new();
             let start_vertex = self
                 .vertexes
@@ -89,7 +90,7 @@ pub mod graph {
                 let mut visited: HashMap<usize, bool> = HashMap::new();
                 result.push(vertex.clone());
                 self.dfs_helper(vertex, &mut visited, &mut result);
-                return Ok(result);
+                return Ok(DFSResult::<T, V>{ 0: result });
             }
             Err(GraphError::VertexNotFound)
         }
