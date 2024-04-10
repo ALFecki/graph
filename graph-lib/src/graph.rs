@@ -1,7 +1,7 @@
 pub mod graph {
     use std::cell::{Ref, RefCell, RefMut};
     use std::collections::{HashMap, HashSet};
-    use std::fmt::{format, Debug};
+    use std::fmt::{format, Debug, Display};
     use std::ops::Deref;
     use std::rc::Rc;
     use std::str::FromStr;
@@ -47,9 +47,39 @@ pub mod graph {
         vertexes: Vec<Rc<RefCell<Vertex<T, V>>>>,
         edges: Vec<Rc<RefCell<OrientedEdge<T, V>>>>,
     }
-    
+
+    pub struct DFSResult<T: Debug, V: Debug>(Vec<Rc<RefCell<Vertex<T, V>>>>);
+
+    impl<T: Debug + ToString, V: Debug + ToString> ToString for DFSResult<T, V> {
+        fn to_string(&self) -> String {
+            let mut res = String::new();
+            for vertex in self.0 {
+                let borrow = vertex.borrow();
+                res.push_str(format!(
+                    "{} {} {}",
+                    borrow.id(),
+                    borrow.value().to_string(),
+                    borrow
+                        .get_edges()
+                        .iter()
+                        .filter_map(|p| {
+                            let edge_borrow = p.borrow();
+                            if edge_borrow.start_id() != Some(borrow.id()) {
+                                edge_borrow.start_id()
+                            } else {
+                                edge_borrow.end_id()
+                            }
+                        })
+                        .collect()
+                ).as_str());
+            }
+            res
+        }
+    }
+
     impl<T: Debug, V: Debug> OrientedGraph<T, V> {
-        pub fn depth_first_search(&self, start_vertex_id: usize) {
+        pub fn depth_first_search(&self, start_vertex_id: usize) -> DFSResult<T, V> {
+            let mut result = Vec::new();
             let start_vertex = self
                 .vertexes
                 .iter()
@@ -57,22 +87,28 @@ pub mod graph {
 
             if let Some(vertex) = start_vertex {
                 let mut visited: HashMap<usize, bool> = HashMap::new();
-                self.dfs_helper(vertex, &mut visited);
-            } else {
-                println!("Start vertex not found.");
+                result.push(vertex.clone());
+                self.dfs_helper(vertex, &mut visited, &mut result);
+                return Ok(result);
             }
+            Err(GraphError::VertexNotFound)
         }
 
-        fn dfs_helper(&self, vertex: &Rc<RefCell<Vertex<T, V>>>, visited:  &mut HashMap<usize, bool>) {
+        fn dfs_helper(
+            &self,
+            vertex: &Rc<RefCell<Vertex<T, V>>>,
+            visited: &mut HashMap<usize, bool>,
+            result: &mut Vec<Rc<RefCell<Vertex<T, V>>>>,
+        ) {
             visited.insert(vertex.borrow().id(), true);
-            println!("Visited vertex: {:?}", vertex.borrow().value());
 
             for edge in &vertex.borrow().get_edges() {
                 let neighbor = edge.borrow().end();
                 if let Some(neighbor) = neighbor {
                     let neighbor_id = neighbor.borrow().id();
                     if visited.get(&neighbor_id).is_none() {
-                        self.dfs_helper(&neighbor, visited);
+                        result.push(neighbor.clone());
+                        self.dfs_helper(&neighbor, visited, result);
                     }
                 }
             }
