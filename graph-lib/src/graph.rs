@@ -75,40 +75,29 @@ pub mod graph {
             }
         }
 
-        fn remove_edge_by_vertices(
+        pub fn remove_edge_by_vertices(
             &mut self,
             start_vertex_id: usize,
             end_vertex_id: usize,
-        ) {
-            // Найти вершины по их идентификаторам
-            let start_vertex = self
-                .vertexes
-                .iter()
-                .find(|vertex| vertex.borrow().id() == start_vertex_id);
-
-            let end_vertex = self
-                .vertexes
-                .iter()
-                .find(|vertex| vertex.borrow().id() == end_vertex_id);
-
-            if let (Some(start), Some(end)) = (start_vertex, end_vertex) {
-                // Найти ребро по начальной и конечной вершине
+        ) -> Result<(), GraphError> {
+            if let (Some(start), Some(end)) = (self.get_vertex_by_id(start_vertex_id), self.get_vertex_by_id(end_vertex_id)) {
+                
                 let edge_index = start
                     .borrow()
                     .get_edges()
                     .iter()
-                    .position(|edge| edge.borrow().end().unwrap() == Some(Rc::downgrade(end)));
-
+                    .position(|edge| edge.borrow().end().unwrap().borrow().id() == end.borrow().id());
+                
                 if let Some(index) = edge_index {
-                    let edge = start.borrow_mut().edges.remove(index);
-
-                    // Удалить ребро из списка ребер графа
-                    graph.edges.retain(|e| !Rc::ptr_eq(&e, &edge));
-
-                    // Удалить ребро из списка ребер конечной вершины
-                    end.borrow_mut().edges.retain(|e| !Rc::ptr_eq(&e, &edge));
+                    let edge = start.borrow_mut().get_edges().remove(index);
+                    
+                    self.edges.retain(|e| !Rc::ptr_eq(&e, &edge));
+                    end.borrow_mut().get_edges().retain(|e| !Rc::ptr_eq(&e, &edge));
+                    
+                return Ok(());
                 }
             }
+            Err(GraphError::EdgeNotFound)
         }
     }
 
@@ -202,4 +191,5 @@ pub mod graph {
             self.remove_vertex(vertex)
         }
     }
+        
 }

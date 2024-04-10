@@ -11,10 +11,9 @@ pub mod vertex {
 
         fn get_edges(&self) -> Vec<Rc<RefCell<Self::EdgeType>>>;
         fn add_neighbor(&mut self, new_neighbor: Rc<RefCell<Self::EdgeType>>);
-        fn find_neighbor(&self, vertex_id: Self);
-
+        fn find_neighbor_index(&self, index: usize) -> Option<usize>;
         fn remove_neighbor(&self, vertex: impl DefaultVertex<T, V>) -> Result<(), ()>;
-        fn remove_neighbor_by_position(&mut self, remove_id: usize) -> Result<(), GraphError>;
+        fn remove_neighbor_by_position(&mut self, remove_id: usize) -> Result<Rc<RefCell<Self::EdgeType>>, GraphError>;
 
         fn id(&self) -> usize;
         fn value(&self) -> &T;
@@ -57,24 +56,20 @@ pub mod vertex {
             self.edges.push(new_neighbor)
         }
 
-        fn find_neighbor(&self, vertex: Self) {
-            // self.edges.iter().find(|&&p| if let Some(end) = p.end() {end.get_id() == vertex_id} else {})
+        fn find_neighbor_index(&self, index: usize) -> Option<usize> {
+            self.get_edges()
+                .iter()
+                .position(|edge| edge.borrow().end().unwrap().borrow().id() == index)
         }
 
         fn remove_neighbor(&self, vertex: impl DefaultVertex<T, V>) -> Result<(), ()> {
             todo!()
         }
 
-        fn remove_neighbor_by_position(&mut self, remove_id: usize) -> Result<(), GraphError> {
-            if let Some(pos) = self.edges.iter().position(|p| {
-                let borrow = p.borrow();
-                (borrow.start_id() == Some(self.id()) && borrow.end_id() == Some(remove_id))
-                    || (borrow.start_id() == Some(remove_id) && borrow.end_id() == Some(self.id()))
-            }) {
-                self.edges.remove(pos);
-                return Ok(());
-            }
-            Err(GraphError::EdgeNotFound)
+        fn remove_neighbor_by_position(&mut self, remove_id: usize) -> Result<Rc<RefCell<Self::EdgeType>>, GraphError> {
+            let edge = self.edges.remove(remove_id);
+            return Ok(edge);
+            
         }
 
         fn id(&self) -> usize {
